@@ -179,10 +179,6 @@ kbd{font-family:var(--f-mono);font-size:12px;border:1px solid var(--line);border
 .legend i.r{background:var(--bad);border-color:var(--bad)}
 .stem.sm{font-size:16px}
 @media (pointer:coarse){.keys{display:none}}
-.syncbox{display:grid;gap:8px}
-.code{width:100%;font-family:var(--f-mono);font-size:12px;line-height:1.4;padding:10px;border:1px solid var(--line);border-radius:6px;background:var(--paper);color:var(--ink);resize:vertical;word-break:break-all}
-.code:focus{outline:2px solid var(--drop);outline-offset:1px}
-.note.err{color:var(--bad)}
 .hidden-sm{}
 @media (max-width:520px){.hidden-sm{display:none}.stem{font-size:17px}.qcard{padding:16px}}
 </style>
@@ -1090,26 +1086,6 @@ function renderHome(){
         ${hasTTS?'':'<p class="note" style="color:var(--bad)">Browser ini tidak mendukung suara (text-to-speech). Gunakan Chrome, Edge, atau Safari agar Listening bisa diputar.</p>'}
       </section>
     </div>
-    <section class="panel" id="sync">
-      <span class="label">Pindah perangkat</span>
-      <h2>Bawa progres ke HP atau PC lain</h2>
-      <p>Salin kode progres di perangkat ini, kirim ke perangkat lain (misalnya lewat WhatsApp ke diri sendiri), lalu tempel di menu impor. Riwayat skor dan daftar soal salah akan digabung, tidak saling menimpa.</p>
-      <div class="row">
-        <button class="btn" id="exp-btn">Salin kode progres</button>
-        <button class="btn" id="imp-btn">Impor progres</button>
-      </div>
-      <div class="syncbox" id="exp-box" hidden>
-        <label class="label" for="exp-code">Kode progres perangkat ini</label>
-        <textarea id="exp-code" class="code" rows="3" readonly></textarea>
-        <span class="note" id="exp-msg" aria-live="polite"></span>
-      </div>
-      <div class="syncbox" id="imp-box" hidden>
-        <label class="label" for="imp-code">Tempel kode dari perangkat lain</label>
-        <textarea id="imp-code" class="code" rows="3" placeholder="TOEFL1:…"></textarea>
-        <div class="row"><button class="btn primary" id="imp-go">Gabungkan progres</button></div>
-        <span class="note" id="imp-msg" aria-live="polite"></span>
-      </div>
-    </section>
     <section class="panel">
       <span class="label">Format TOEFL ITP asli</span>
       <div style="overflow-x:auto"><table class="fmt">
@@ -1130,7 +1106,6 @@ function renderHome(){
     startTest('prac',packSet(selPack,secs),packLabel(selPack)+' · Latihan '+nm)});
   const gw=document.getElementById('go-wrong');
   if(gw)gw.onclick=()=>startTest('prac',orderIds(wrong),'Ulang soal salah');
-  bindSync();
   const cw=document.getElementById('clr-wrong');
   if(cw)cw.onclick=()=>{if(cw.dataset.c){sset(WKEY,[]);renderHome()}else{cw.dataset.c='1';cw.textContent='Yakin? Klik lagi';cw.classList.add('danger')}};
 }
@@ -1281,7 +1256,7 @@ function finish(){
   st.ids.forEach(id=>{const ok=st.ans[id]===byId(id).a;if(ok)wl=wl.filter(x=>x!==id);else if(st.ans[id]!==undefined&&!wl.includes(id))wl.push(id)});
   sset(WKEY,wl);
   const h=sget(HKEY,[]);
-  h.unshift({date:new Date().toLocaleDateString('id-ID',{day:'numeric',month:'short'}),label:st.label,score:full?total:`${correct}/${st.ids.length}`,ts:Date.now()});
+  h.unshift({date:new Date().toLocaleDateString('id-ID',{day:'numeric',month:'short'}),label:st.label,score:full?total:`${correct}/${st.ids.length}`});
   sset(HKEY,h.slice(0,8));
   st.result={cnt,scaled,total,correct,used};
   revFilter=correct<st.ids.length?'wrong':'all';
@@ -1343,52 +1318,6 @@ function renderResult(r){
   $('home').onclick=renderHome;
   $('rev').onclick=()=>{st.cur=0;renderTest()};
   app.querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{revFilter=b.dataset.f;renderResult(r)});
-}
-
-/* ================= EKSPOR / IMPOR PROGRES ================= */
-function makeCode(){
-  const data={v:1,h:sget(HKEY,[]),w:sget(WKEY,[]),p:selPack};
-  return 'TOEFL1:'+btoa(unescape(encodeURIComponent(JSON.stringify(data))));
-}
-function readCode(txt){
-  const m=String(txt||'').replace(/\s+/g,'').match(/^TOEFL1:([A-Za-z0-9+/=]+)$/);
-  if(!m)return null;
-  try{const d=JSON.parse(decodeURIComponent(escape(atob(m[1]))));
-    if(!d||d.v!==1||!Array.isArray(d.h)||!Array.isArray(d.w))return null;return d}catch(e){return null}
-}
-function mergeProgress(d){
-  const key=r=>[r.date,r.label,r.score].join('|');
-  const mine=sget(HKEY,[]), seen=new Set(mine.map(key));
-  const add=d.h.filter(r=>r&&r.label&&!seen.has(key(r)));
-  const all=mine.concat(add).map((r,i)=>({r,i}));
-  all.sort((a,b)=>(b.r.ts||0)-(a.r.ts||0)||a.i-b.i);
-  sset(HKEY,all.map(x=>x.r).slice(0,8));
-  const wl=sget(WKEY,[]);let nw=0;
-  d.w.forEach(id=>{if(typeof id==='number'&&byId(id)&&!wl.includes(id)){wl.push(id);nw++}});
-  sset(WKEY,wl);
-  return {h:add.length,w:nw};
-}
-function bindSync(){
-  const $=x=>document.getElementById(x);
-  if(!$('exp-btn'))return;
-  $('exp-btn').onclick=()=>{
-    $('imp-box').hidden=true;$('exp-box').hidden=false;
-    const ta=$('exp-code');ta.value=makeCode();
-    const sel=()=>{ta.focus();ta.select()};
-    if(navigator.clipboard&&navigator.clipboard.writeText){
-      navigator.clipboard.writeText(ta.value).then(()=>{$('exp-msg').textContent='Kode tersalin. Tempel di perangkat lain.'},()=>{sel();$('exp-msg').textContent='Kode sudah dipilih. Tekan Ctrl+C (atau tahan lalu Salin di HP).'});
-    }else{sel();$('exp-msg').textContent='Kode sudah dipilih. Tekan Ctrl+C (atau tahan lalu Salin di HP).'}
-  };
-  $('imp-btn').onclick=()=>{$('exp-box').hidden=true;$('imp-box').hidden=false;$('imp-msg').textContent='';$('imp-code').focus()};
-  $('imp-go').onclick=()=>{
-    const d=readCode($('imp-code').value), msg=$('imp-msg');
-    if(!d){msg.textContent='Kode tidak dikenali. Pastikan seluruh kode tersalin, diawali "TOEFL1:".';msg.className='note err';return}
-    const r=mergeProgress(d);
-    renderHome();
-    const m=document.getElementById('imp-msg'), b=document.getElementById('imp-box');
-    b.hidden=false;m.className='note ok-t';
-    m.textContent=(r.h||r.w)?`Berhasil digabung: ${r.h} riwayat skor dan ${r.w} soal salah ditambahkan.`:'Kode valid, tapi semua progresnya sudah ada di perangkat ini.';
-  };
 }
 
 /* ================= KEYBOARD ================= */
