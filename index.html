@@ -12,6 +12,7 @@
   --paper:#f4f7f6; --card:#ffffff; --ink:#1b2422; --muted:#5d6966; --line:#d3dcd9;
   --drop:#16805f; --drop-soft:#e1f1ea; --graphite:#2a2e33; --on-graphite:#ffffff;
   --good:#2b7a3d; --good-soft:#e3f3e6; --bad:#b93a2e; --bad-soft:#fbe8e5; --warn:#a8660b;
+  --r-s:#1f5fae; --r-v:#c0392b; --r-o:#1d7f5a; --r-c:#7a4bb0; --r-m:#6b7774; --r-k:#a8660b;
   --f-ui:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
   --f-mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
   --f-read:"Source Serif 4",Georgia,"Times New Roman",serif;
@@ -19,11 +20,11 @@
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --paper:#111614; --card:#18201d; --ink:#e4ebe8; --muted:#97a5a0; --line:#2b3632;
   --drop:#4dc39e; --drop-soft:#16302a; --graphite:#dde3e6; --on-graphite:#111614;
-  --good:#74c886; --good-soft:#18301f; --bad:#f08072; --bad-soft:#3a1d19; --warn:#e3a54a; color-scheme:dark}}
+  --good:#74c886; --good-soft:#18301f; --bad:#f08072; --bad-soft:#3a1d19; --warn:#e3a54a; --r-s:#7fb2f0; --r-v:#f08a7c; --r-o:#5ccaa0; --r-c:#c3a2ee; --r-m:#9aa8a3; --r-k:#e3a54a; color-scheme:dark}}
 :root[data-theme="dark"]{
   --paper:#111614; --card:#18201d; --ink:#e4ebe8; --muted:#97a5a0; --line:#2b3632;
   --drop:#4dc39e; --drop-soft:#16302a; --graphite:#dde3e6; --on-graphite:#111614;
-  --good:#74c886; --good-soft:#18301f; --bad:#f08072; --bad-soft:#3a1d19; --warn:#e3a54a; color-scheme:dark}
+  --good:#74c886; --good-soft:#18301f; --bad:#f08072; --bad-soft:#3a1d19; --warn:#e3a54a; --r-s:#7fb2f0; --r-v:#f08a7c; --r-o:#5ccaa0; --r-c:#c3a2ee; --r-m:#9aa8a3; --r-k:#e3a54a; color-scheme:dark}
 
 *{box-sizing:border-box}
 body{background:var(--paper);color:var(--ink);font-family:var(--f-ui);font-size:15px;line-height:1.55;
@@ -186,6 +187,51 @@ kbd{font-family:var(--f-mono);font-size:12px;border:1px solid var(--line);border
 .facts div{display:grid;gap:2px}
 .facts strong{font-size:26px;color:var(--drop)}
 .note.err{color:var(--bad)}
+
+/* PANDUAN */
+.guide{display:grid;gap:18px}
+.gtabs{padding-block:2px}
+.gbody{display:grid;gap:14px;max-width:820px}
+.gbody h2{font-size:24px}
+.gbody h3{font-size:17px;margin-top:10px;padding-top:12px;border-top:1px solid var(--line)}
+.gbody p{margin:0;max-width:72ch}
+.gbody .note{color:var(--muted)}
+.steps{margin:0;padding-left:22px;display:grid;gap:8px}
+.steps li{padding-left:4px}
+.dots{margin:0;padding-left:20px;display:grid;gap:6px}
+.tablewrap{overflow-x:auto}
+.qtypes td:first-child{font-weight:600;white-space:nowrap}
+.roles{display:grid;gap:10px}
+.role{display:grid;grid-template-columns:44px 1fr;gap:12px;align-items:start;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.role .chip{display:grid;place-items:center;height:28px;border-radius:6px;font:600 12px var(--f-mono);color:var(--card);background:var(--tk);border:none;padding:0}
+.tk-S{--tk:var(--r-s)}.tk-V{--tk:var(--r-v)}.tk-O{--tk:var(--r-o)}.tk-C{--tk:var(--r-c)}.tk-M{--tk:var(--r-m)}.tk-K{--tk:var(--r-k)}
+.exs{display:grid;gap:10px}
+.ex{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:12px 14px;display:grid;gap:6px;min-width:0}
+.sent{font-family:var(--f-read);font-size:17px;line-height:1.7}
+.exs.show .sent{line-height:2.6}
+.tk{position:relative}
+.exs.show .tk{border-bottom:3px solid var(--tk);padding:0 1px}
+.exs.show .tk::after{content:attr(data-r);position:absolute;left:0;top:100%;margin-top:2px;font:600 10px/1 var(--f-mono);color:var(--tk);letter-spacing:.04em}
+.exnote{font-size:13.5px;color:var(--muted)}
+.exs:not(.show) .exnote{display:none}
+.formula{font-family:var(--f-mono);font-weight:600;font-size:15px;color:var(--drop);background:var(--drop-soft);border-radius:8px;padding:12px 14px;text-align:center}
+.pair{display:grid;gap:6px;font-size:14.5px}
+.pair .bad,.pair .good{display:flex;gap:8px;align-items:baseline;padding:8px 10px;border-radius:6px}
+.pair .bad{background:var(--bad-soft)}.pair .good{background:var(--good-soft)}
+.pair .bad .mark{color:var(--bad);font-weight:700}.pair .good .mark{color:var(--good);font-weight:700}
+.pair u{text-decoration-thickness:2px;text-underline-offset:3px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px}
+.cards .card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:12px 14px;display:grid;gap:4px;align-content:start}
+.cards .card p{font-size:14px;color:var(--ink)}
+.checks{display:grid;gap:10px}
+.check{display:grid;grid-template-columns:32px 1fr;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:12px 14px}
+.check .num{width:28px;height:28px;border-radius:50%;border:1.5px solid var(--drop);color:var(--drop);display:grid;place-items:center;font:600 13px var(--f-mono)}
+.check > div{display:grid;gap:6px;min-width:0}
+.check p{font-size:14px;color:var(--muted)}
+.idioms{display:flex;flex-wrap:wrap;gap:8px}
+.idioms span{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:5px 12px;font-size:13.5px;color:var(--muted)}
+.idioms b{color:var(--ink);font-weight:600;margin-right:4px}
+.gnav{padding-top:8px;border-top:1px solid var(--line)}
 .hidden-sm{}
 @media (max-width:520px){.hidden-sm{display:none}.stem{font-size:17px}.qcard{padding:16px}}
 </style>
@@ -2850,6 +2896,227 @@ const Q=[];
   });
 })();
 
+/* ================= PANDUAN & TRIK ================= */
+/* Kalimat contoh: [S:...] [V:...] [O:...] [C:...] [M:...] [K:...] */
+const ROLE={S:'Subjek',V:'Verb',O:'Objek',C:'Pelengkap',M:'Keterangan',K:'Penghubung'};
+function sent(src){
+  return `<div class="sent">${src.replace(/\[([SVOCMK]):([^\]]+)\]/g,(m,r,t)=>`<span class="tk tk-${r}" data-r="${r==='M'?'Ket':r==='K'?'Hub':r}">${t}</span>`)}</div>`;
+}
+function ex(src,note){return `<div class="ex">${sent(src)}${note?`<p class="exnote">${note}</p>`:''}</div>`}
+function pair(bad,good,why){return `<div class="pair"><div class="bad"><span class="mark">✗</span>${bad}</div><div class="good"><span class="mark">✓</span>${good}</div>${why?`<p class="exnote">${why}</p>`:''}</div>`}
+
+const GUIDE=[
+{k:'umum',t:'Gambaran umum',html:`
+ <h2>Cara menghadapi TOEFL ITP</h2>
+ <p>TOEFL ITP terdiri dari tiga bagian yang dikerjakan berurutan. Waktu tiap bagian terpisah, jadi sisa waktu di satu bagian tidak bisa dipakai di bagian lain.</p>
+ <div class="tablewrap"><table class="fmt">
+  <thead><tr><th>Bagian</th><th class="n">Soal</th><th class="n">Waktu</th><th class="n">Per soal</th></tr></thead>
+  <tbody>
+   <tr><td>Listening</td><td class="n">50</td><td class="n">35 mnt</td><td class="n">ikut audio</td></tr>
+   <tr><td>Structure & Written Expression</td><td class="n">40</td><td class="n">25 mnt</td><td class="n">± 35 detik</td></tr>
+   <tr><td>Reading</td><td class="n">50</td><td class="n">55 mnt</td><td class="n">± 1 menit</td></tr>
+  </tbody></table></div>
+ <h3>Lima aturan emas</h3>
+ <ol class="steps">
+  <li><b>Jangan pernah mengosongkan jawaban.</b> Skor dihitung dari jumlah jawaban benar. Jawaban salah tidak mengurangi nilai, jadi tebak jika waktu hampir habis.</li>
+  <li><b>Eliminasi dulu, baru pilih.</b> Membuang dua pilihan yang jelas salah menaikkan peluang benar dari 25% menjadi 50%.</li>
+  <li><b>Jangan terpaku pada satu soal.</b> Kalau lebih dari satu menit belum ketemu, pilih jawaban terbaik, tandai ragu, lalu lanjut.</li>
+  <li><b>Kenali pola, bukan menghafal soal.</b> Soal TOEFL berulang dalam pola yang sama. Panduan ini merangkum pola-pola itu.</li>
+  <li><b>Pelajari kesalahanmu.</b> Setelah latihan, baca pembahasan soal yang salah dan pakai fitur "Latihan ulang soal salah".</li>
+ </ol>
+ <h3>Jadwal latihan yang disarankan</h3>
+ <ul class="dots">
+  <li>Minggu 1–2: latihan per bagian tanpa waktu. Fokus memahami pola dan pembahasan.</li>
+  <li>Minggu 3: latihan per bagian sambil mengatur kecepatan, terutama Structure (35 detik per soal).</li>
+  <li>Minggu 4: simulasi penuh 115 menit, sekali atau dua kali seminggu, dengan paket berbeda.</li>
+ </ul>`},
+{k:'listening',t:'Listening',html:`
+ <h2>Listening Comprehension</h2>
+ <p>Audio hanya diputar sekali di ujian asli, jadi kuncinya adalah tahu apa yang harus didengar sebelum audio mulai.</p>
+ <h3>Part A · Percakapan pendek (30 soal)</h3>
+ <ol class="steps">
+  <li><b>Lirik keempat pilihan sebelum audio.</b> Dari pilihan jawaban kamu bisa menebak topik dan siapa yang bicara.</li>
+  <li><b>Fokus pada pembicara kedua.</b> Jawaban hampir selalu ada di kalimat terakhir.</li>
+  <li><b>Pilih parafrase, bukan kata yang sama.</b> Jawaban benar biasanya memakai sinonim. Pilihan yang mengulang kata dari audio sering jebakan.</li>
+  <li><b>Waspadai bunyi mirip.</b> Misalnya <i>class/glass</i>, <i>walk/work</i>, <i>fourteen/forty</i>.</li>
+  <li><b>Langsung jawab dan lanjut.</b> Jangan memikirkan soal yang sudah lewat.</li>
+ </ol>
+ <h3>Ungkapan yang sering keluar</h3>
+ <div class="tablewrap"><table class="fmt">
+  <thead><tr><th>Makna</th><th>Ungkapan</th></tr></thead>
+  <tbody>
+   <tr><td>Saran</td><td>Why don't you…? · Why not…? · How about…? · You'd better… · Have you tried…? · If I were you, I'd…</td></tr>
+   <tr><td>Setuju</td><td>So do I · Me too · Neither do I · You can say that again · I'll say · Tell me about it · Same here</td></tr>
+   <tr><td>Menolak halus</td><td>I'd love to, but… · I wish I could, but… · I'd better not</td></tr>
+   <tr><td>Kenyataan kebalikan</td><td>If only I had… · I wish I had… · I would if I could (artinya tidak bisa)</td></tr>
+   <tr><td>Sangat positif</td><td>Couldn't be better · Couldn't agree more · I wouldn't miss it for anything</td></tr>
+   <tr><td>Kata hampir-tidak</td><td>hardly · barely · scarcely · seldom · rarely</td></tr>
+  </tbody></table></div>
+ <h3>Idiom wajib hafal</h3>
+ <div class="idioms">
+  <span><b>count me in</b> saya ikut</span><span><b>slipped my mind</b> lupa</span><span><b>give a hand</b> membantu</span>
+  <span><b>on my own</b> sendiri</span><span><b>a piece of cake</b> sangat mudah</span><span><b>under the weather</b> kurang sehat</span>
+  <span><b>hit the books</b> belajar keras</span><span><b>call it a day</b> berhenti bekerja</span><span><b>cost an arm and a leg</b> sangat mahal</span>
+  <span><b>keep an eye on</b> mengawasi</span><span><b>in a heartbeat</b> tanpa ragu</span><span><b>couldn't put it down</b> sangat seru</span>
+  <span><b>that's news to me</b> baru tahu</span><span><b>make it</b> bisa datang</span><span><b>take it easy</b> santai saja</span>
+ </div>
+ <h3>Part B & C · Percakapan panjang dan ceramah (20 soal)</h3>
+ <ol class="steps">
+  <li><b>Baca sekilas pilihan semua soal dalam satu rekaman</b> selagi narator membacakan petunjuk. Kamu akan tahu informasi apa yang perlu ditangkap.</li>
+  <li><b>Kalimat pembuka adalah topik utama.</b> Penanda: "Today we'll talk about…", "I want to discuss…".</li>
+  <li><b>Urutan soal mengikuti urutan rekaman.</b> Soal pertama tentang awal, soal terakhir tentang akhir.</li>
+  <li><b>Tangkap nama, angka, tahun, dan alasan.</b> Penanda alasan: <i>because, so, that's why, the reason</i>.</li>
+  <li><b>Soal "What will they probably do next?"</b> jawabannya ada di kalimat paling akhir.</li>
+  <li><b>Perhatikan kata penanda:</b> <i>However</i> (pertentangan), <i>For example</i> (contoh), <i>The main point is…</i>, <i>Remember…</i> (sering ditanyakan).</li>
+ </ol>`},
+{k:'structure',t:'Structure',html:`
+ <h2>Structure · Melengkapi kalimat</h2>
+ <p>Hampir semua soal Structure bisa dijawab dengan satu pertanyaan: <b>bagian mana dari kalimat inti yang hilang?</b> Karena itu kamu harus bisa menemukan subjek dan verb dengan cepat.</p>
+ <h3>Kenali bagian kalimat</h3>
+ <div class="roles">
+  <div class="role"><span class="chip tk-S">S</span><div><b>Subjek</b>: pelaku atau hal yang dibicarakan. Bentuknya kata benda (<i>the students</i>), kata ganti (<i>I, he, they</i>), gerund (<i>Swimming</i>), atau klausa (<i>What he said</i>). Biasanya di depan verb.</div></div>
+  <div class="role"><span class="chip tk-V">V</span><div><b>Verb utama</b>: kata kerja yang punya tense. Bisa satu kata (<i>visits</i>) atau auxiliary + verb (<i>has finished, will go, was built</i>). <b>V-ing atau to + V saja bukan verb utama.</b></div></div>
+  <div class="role"><span class="chip tk-O">O</span><div><b>Objek</b>: penerima tindakan, setelah verb transitif (<i>read <u>a book</u></i>). Kata ganti objek: <i>me, him, her, us, them</i>.</div></div>
+  <div class="role"><span class="chip tk-C">C</span><div><b>Pelengkap</b>: setelah <i>be, become, seem, look</i>. Contoh: <i>She is <u>a doctor</u></i>, <i>He seems <u>tired</u></i>.</div></div>
+  <div class="role"><span class="chip tk-M">Ket</span><div><b>Keterangan</b>: frasa preposisi (<i>in the class</i>), keterangan waktu atau tempat, frasa di antara koma, klausa <i>who/which</i>. Bagian ini <b>bisa dicoret</b> tanpa merusak kalimat inti.</div></div>
+  <div class="role"><span class="chip tk-K">Hub</span><div><b>Penghubung</b>: <i>and, but, because, although, when, if, who, which, that</i>. Menyambungkan dua klausa.</div></div>
+ </div>
+ <h3>Trik coret: temukan inti kalimat</h3>
+ <ol class="steps">
+  <li>Coret frasa preposisi: <i>of…, in…, on…, with…, along with…, as well as…</i></li>
+  <li>Coret yang diapit koma (appositive): <i>Jakarta, <s>the capital of Indonesia,</s> is…</i></li>
+  <li>Coret klausa relatif: <i>The woman <s>who lives next door</s> teaches…</i></li>
+  <li>Yang tersisa adalah S + V (+ O/C). Di sinilah kamu cek apa yang kurang.</li>
+ </ol>
+ <p class="note">Tekan tombol di bawah untuk menampilkan atau menyembunyikan label pada contoh.</p>
+ <button class="btn" data-toggle-sent>Tampilkan label S-V-O</button>
+ <div class="exs">
+  ${ex('[M:In 1928,] [S:Alexander Fleming] [V:discovered] [O:penicillin].','Pola dasar: keterangan waktu + S + V + O.')}
+  ${ex('[S:The number] [M:of tourists visiting Bali] [V:has grown] [M:steadily].','Subjek intinya "The number" (tunggal), bukan "tourists". Karena itu verb-nya "has", bukan "have".')}
+  ${ex('[S:Jakarta,] [M:the capital of Indonesia,] [V:is] [C:the largest city] [M:in the country].','Bagian di antara koma adalah keterangan (appositive). Coret saja: Jakarta is the largest city.')}
+  ${ex('[S:The woman] [M:who lives next door] [V:teaches] [O:English].','Klausa "who lives next door" hanya menerangkan subjek. Verb utamanya "teaches".')}
+  ${ex('[S:Swimming every morning] [V:keeps] [O:him] [C:healthy].','Gerund (V-ing) bisa menjadi subjek. Gerund subjek selalu tunggal: "keeps".')}
+  ${ex('[S:She] [V:was] [C:tired], [K:but] [S:she] [V:finished] [O:the report].','Dua klausa (dua verb) disambung satu penghubung.')}
+ </div>
+ <h3>Rumus klausa</h3>
+ <div class="formula">Jumlah verb utama = jumlah penghubung + 1</div>
+ ${pair('Despite it rained, the match continued.','Although it rained, the match continued.','Ada 2 verb (rained, continued), jadi butuh 1 penghubung klausa. "Despite" adalah preposisi, bukan penghubung klausa.')}
+ ${pair('The Pacific Ocean the largest ocean on Earth.','The Pacific Ocean <u>is</u> the largest ocean on Earth.','Tidak ada verb sama sekali. Jawaban harus mengandung verb.')}
+ ${pair('Marie Curie, <u>she was</u> a physicist, won a Nobel Prize.','Marie Curie, <u>a physicist</u>, won a Nobel Prize.','Verb "won" sudah ada. Bagian di antara koma cukup keterangan tanpa verb.')}
+ <h3>Langkah mengerjakan tiap soal</h3>
+ <ol class="steps">
+  <li>Cari subjek dan verb utama di bagian kalimat yang sudah ada.</li>
+  <li>Tentukan apa yang hilang: subjek, verb, penghubung, atau keterangan?</li>
+  <li>Hitung klausa dan penghubung dengan rumus di atas.</li>
+  <li>Cek pola khusus: inversi, perbandingan, pasangan kata, bentuk verb.</li>
+  <li>Pilih jawaban yang membuat kalimat lengkap tanpa subjek atau verb ganda.</li>
+ </ol>
+ <h3>Apa yang hilang, apa jawabannya</h3>
+ <div class="tablewrap"><table class="fmt">
+  <thead><tr><th>Kondisi kalimat</th><th>Ciri jawaban yang benar</th></tr></thead>
+  <tbody>
+   <tr><td>Belum ada verb utama</td><td>Mengandung verb lengkap: <i>is, was built, has grown</i></td></tr>
+   <tr><td>S + V sudah lengkap di bagian lain</td><td>Keterangan tanpa verb utama: frasa benda, participle (<i>Founded in…</i>), frasa preposisi</td></tr>
+   <tr><td>Ada dua klausa tanpa penghubung</td><td>Penghubung atau relative pronoun: <i>although, because, which, who</i></td></tr>
+   <tr><td>Kalimat dibuka kata negatif atau terbatas</td><td>Inversi: auxiliary sebelum subjek (<i>did she realize</i>)</td></tr>
+   <tr><td>Ada <i>than</i>, <i>as… as</i>, atau <i>the more</i></td><td>Bentuk perbandingan yang pasangannya cocok</td></tr>
+  </tbody></table></div>
+ <h3>Pola wajib hafal</h3>
+ <div class="cards">
+  <div class="card"><b>Inversi</b><p>Not until · Only after/when/in · Seldom · Rarely · Never · Hardly… when · No sooner… than · Not only<br><i>Rarely <u>have I seen</u> such rain.</i></p></div>
+  <div class="card"><b>Perbandingan</b><p>as + adj + as · adj-er / more + than · the + adj-est / most · twice as… as · the more…, the more…<br><i>The more you read, <u>the better</u> you write.</i></p></div>
+  <div class="card"><b>Pasangan tetap</b><p>either… or · neither… nor · both… and · not only… but also · so… that · such (a)… that · hardly… when</p></div>
+  <div class="card"><b>Subjunctive</b><p>suggest / recommend / insist / it is important (essential, necessary) that + <b>V1 tanpa -s</b><br><i>It is essential that he <u>submit</u> it.</i></p></div>
+  <div class="card"><b>Participle</b><p>V-ing = aktif (<i>Living in the Arctic, bears…</i>)<br>V3 = pasif (<i>Founded in 1636, Harvard…</i>)</p></div>
+  <div class="card"><b>Gerund vs to + V</b><p>+ V-ing: enjoy, avoid, finish, consider, mind, suggest, look forward to, setelah preposisi<br>+ to V: want, plan, decide, hope, agree, ask/tell/advise + objek</p></div>
+ </div>`},
+{k:'we',t:'Written Expression',html:`
+ <h2>Written Expression · Mencari bagian yang salah</h2>
+ <p>Ada empat bagian bergaris bawah dan tepat satu yang salah. Bagian yang <b>tidak</b> bergaris bawah selalu benar, jadi pakai bagian itu sebagai patokan (misalnya "last year" berarti tense harus lampau).</p>
+ <h3>Langkah mengerjakan</h3>
+ <ol class="steps">
+  <li>Baca seluruh kalimat sekali.</li>
+  <li>Temukan subjek inti dan verb utama dengan trik coret dari bagian Structure.</li>
+  <li>Periksa keempat bagian dengan daftar cek di bawah, mulai dari nomor 1.</li>
+  <li>Kalau belum ketemu, coret bagian yang pasti benar. Yang tersisa adalah jawabannya.</li>
+ </ol>
+ <h3>Daftar cek 10 kesalahan paling sering</h3>
+ <div class="checks">
+  <div class="check"><span class="num">1</span><div><b>Subject–verb agreement</b><p>Each, every, the number of, one of, gerund, dan uncountable noun memakai verb tunggal.</p>${pair('The number of students <u>have</u> increased.','The number of students <u>has</u> increased.')}</div></div>
+  <div class="check"><span class="num">2</span><div><b>Bentuk verb dan tense</b><p>has/have + V3 · did/modal + V1 · keterangan waktu menentukan tense.</p>${pair('She has <u>wrote</u> three articles.','She has <u>written</u> three articles.')}</div></div>
+  <div class="check"><span class="num">3</span><div><b>Bentuk kata</b><p>Adjective menerangkan noun, adverb menerangkan verb. Perasaan orang memakai -ed (interested), sifat sesuatu memakai -ing (interesting).</p>${pair('He explained it <u>clear</u>.','He explained it <u>clearly</u>.')}</div></div>
+  <div class="check"><span class="num">4</span><div><b>Paralelisme</b><p>Unsur yang dihubungkan and/or/but harus sejenis.</p>${pair('She likes reading, cooking, and <u>to swim</u>.','She likes reading, cooking, and <u>swimming</u>.')}</div></div>
+  <div class="check"><span class="num">5</span><div><b>Tunggal/jamak dan countable</b><p>one of the + jamak · many/few + countable · much/little + uncountable · thousands of.</p>${pair('one of the most popular <u>drink</u>','one of the most popular <u>drinks</u>')}</div></div>
+  <div class="check"><span class="num">6</span><div><b>Kata ganti</b><p>Cocokkan jumlah (it/they, its/their). Who untuk orang, which untuk benda. Setelah preposisi pakai me/him/them.</p>${pair('the letters <u>who</u> described','the letters <u>which</u> described')}</div></div>
+  <div class="check"><span class="num">7</span><div><b>Artikel</b><p>a/an menurut bunyi, bukan huruf (an hour, a university). Tidak ada a/an untuk kata benda jamak.</p>${pair('<u>an</u> university','<u>a</u> university')}</div></div>
+  <div class="check"><span class="num">8</span><div><b>Preposisi dan pasangan kata</b><p>in + tahun · on + tanggal · famous for · depend on · despite (tanpa of).</p>${pair('published <u>at</u> 1744','published <u>in</u> 1744')}</div></div>
+  <div class="check"><span class="num">9</span><div><b>Perbandingan</b><p>Satu suku kata pakai -er (higher), bukan "more high". Pasangan "more" adalah "than", bukan "then" atau "as".</p>${pair('<u>more high</u> than','<u>higher</u> than')}</div></div>
+  <div class="check"><span class="num">10</span><div><b>Kata berlebih</b><p>Subjek ganda, penghubung ganda, atau kata yang maknanya diulang.</p>${pair('Although it rained, <u>but</u> we went.','Although it rained, we went.')}</div></div>
+ </div>`},
+{k:'reading',t:'Reading',html:`
+ <h2>Reading Comprehension</h2>
+ <p>Ada 5 bacaan dengan 10 soal per bacaan. Dengan 55 menit, kamu punya sekitar <b>11 menit per bacaan</b>. Kamu tidak perlu memahami semua kata, cukup tahu di mana informasinya berada.</p>
+ <h3>Strategi per bacaan (± 11 menit)</h3>
+ <ol class="steps">
+  <li><b>Skimming (1 menit):</b> baca judul, kalimat pertama tiap paragraf, dan kalimat terakhir bacaan. Dari situ kamu tahu isi tiap paragraf.</li>
+  <li><b>Kerjakan soal berurutan:</b> urutan soal umumnya mengikuti urutan paragraf.</li>
+  <li><b>Scanning:</b> untuk tiap soal, cari kata kunci (nama, angka, istilah) di bacaan, lalu baca 1–2 kalimat di sekitarnya.</li>
+  <li><b>Soal main idea kerjakan terakhir</b> kalau ragu, karena setelah menjawab soal lain kamu sudah paham isi bacaan.</li>
+  <li><b>Pantau waktu:</b> kalau satu bacaan sudah lewat 12 menit, tebak sisanya dan pindah.</li>
+ </ol>
+ <h3>Tipe soal dan cara menjawab</h3>
+ <div class="tablewrap"><table class="fmt qtypes">
+  <thead><tr><th>Tipe</th><th>Ciri pertanyaan</th><th>Cara menjawab</th></tr></thead>
+  <tbody>
+   <tr><td>Main idea</td><td>What is the passage mainly about? · main purpose</td><td>Pilih yang mencakup semua paragraf. Buang yang terlalu sempit (hanya satu detail) atau terlalu luas.</td></tr>
+   <tr><td>Detail</td><td>According to the passage…</td><td>Temukan kalimat persisnya. Jawaban benar biasanya parafrase dari kalimat itu.</td></tr>
+   <tr><td>Kosakata</td><td>The word X is closest in meaning to</td><td>Ganti kata X dengan tiap pilihan, lalu baca ulang kalimatnya. Pilih yang maknanya tetap masuk akal.</td></tr>
+   <tr><td>Rujukan</td><td>The word "it / they / which" refers to</td><td>Lihat ke kalimat sebelumnya. Cocokkan jumlah (tunggal/jamak) dan maknanya.</td></tr>
+   <tr><td>Inferensi</td><td>It can be inferred / implied / suggested</td><td>Jawaban tidak tertulis langsung, tapi pasti benar menurut bacaan. Jangan pilih yang hanya "mungkin".</td></tr>
+   <tr><td>NOT / EXCEPT</td><td>Which is NOT mentioned…</td><td>Centang tiap pilihan yang ada di bacaan. Pilihan yang tersisa adalah jawabannya.</td></tr>
+   <tr><td>Tujuan penulis</td><td>Why does the author mention X?</td><td>Tanyakan fungsinya: sebagai contoh, pembanding, bukti, atau penjelasan.</td></tr>
+  </tbody></table></div>
+ <h3>Jebakan yang sering muncul</h3>
+ <ul class="dots">
+  <li>Pilihan yang <b>benar menurut pengetahuan umum</b> tapi tidak disebut di bacaan.</li>
+  <li>Pilihan yang memakai <b>kata persis sama</b> dengan bacaan, tapi maknanya diputar.</li>
+  <li>Kata mutlak seperti <i>always, never, only, all, completely</i>. Bacaan akademik jarang seyakin itu.</li>
+  <li>Angka yang benar tapi untuk hal yang berbeda (misalnya jumlah total vs jumlah sebagian).</li>
+ </ul>
+ <h3>Tebak arti kata dari bagiannya</h3>
+ <div class="idioms">
+  <span><b>un-, in-, dis-, non-</b> tidak</span><span><b>mis-</b> salah</span><span><b>re-</b> lagi</span><span><b>pre-</b> sebelum</span>
+  <span><b>-less</b> tanpa</span><span><b>-ful</b> penuh</span><span><b>-able</b> bisa di-</span><span><b>-ness, -ment, -tion</b> kata benda</span>
+ </div>`}
+];
+
+let guideTab='umum';
+function renderGuide(tab){
+  stopAudio();clearInterval(tick);st=null;inGuide=true;
+  if(tab)guideTab=tab;
+  const G=GUIDE.find(g=>g.k===guideTab)||GUIDE[0];
+  app.innerHTML=`
+  <div class="guide">
+    <div class="bar">
+      <div class="sec"><span class="label">Panduan & trik</span><strong>${G.t}</strong></div>
+      <div class="row"><button class="btn" id="home">Beranda</button></div>
+    </div>
+    <div class="chips gtabs" role="tablist">${GUIDE.map(g=>`<button class="chip ${g.k===G.k?'on':''}" role="tab" aria-selected="${g.k===G.k}" data-gtab="${g.k}">${g.t}</button>`).join('')}</div>
+    <article class="gbody">${G.html}</article>
+    <div class="row gnav">${GUIDE.map((g,i)=>g.k===G.k&&GUIDE[i+1]?`<button class="btn primary" data-gtab="${GUIDE[i+1].k}">Lanjut: ${GUIDE[i+1].t} →</button>`:'').join('')}
+      <button class="btn" data-prac-from-guide>Latihan ${G.k==='listening'?'Listening':G.k==='reading'?'Reading':G.k==='umum'?'semua bagian':'Structure & WE'}</button></div>
+  </div>`;
+  window.scrollTo(0,0);
+  document.getElementById('home').onclick=renderHome;
+  app.querySelectorAll('[data-gtab]').forEach(b=>b.onclick=()=>renderGuide(b.dataset.gtab));
+  const tg=app.querySelector('[data-toggle-sent]');
+  if(tg)tg.onclick=()=>{const on=app.querySelector('.exs').classList.toggle('show');tg.textContent=on?'Sembunyikan label':'Tampilkan label S-V-O'};
+  app.querySelector('[data-prac-from-guide]').onclick=()=>{
+    const m={umum:['LSWR','Semua'],listening:['L','Listening'],structure:['SW','Structure'],we:['SW','Structure'],reading:['R','Reading']}[G.k];
+    startTest('prac',packSet(selPack,m[0].split('')),packLabel(selPack)+' · Latihan '+m[1]);
+  };
+}
+
 const SEC={
  L:{name:'Listening Comprehension',dir:'Dengarkan percakapan, lalu pilih jawaban terbaik. Teks audio baru ditampilkan setelah jawaban diperiksa.'},
  S:{name:'Structure',dir:'Pilih kata atau frasa yang paling tepat untuk melengkapi kalimat.'},
@@ -2940,7 +3207,7 @@ function packSet(pack,secs){
 function packLabel(p){return p==='x'?'Acak':PACKS[p].name}
 
 /* ================= STATE ================= */
-let st=null, tick=null, playing=false, confirmEnd=false, revFilter='wrong';
+let inGuide=false, st=null, tick=null, playing=false, confirmEnd=false, revFilter='wrong';
 const app=document.getElementById('app');
 
 function startTest(mode,ids,label){
@@ -2991,7 +3258,7 @@ function updTimer(){const el=document.getElementById('timer');if(!el||!st)return
 
 /* ================= HOME ================= */
 function renderHome(){
-  stopAudio();clearInterval(tick);st=null;playing=false;
+  stopAudio();clearInterval(tick);st=null;playing=false;inGuide=false;
   const h=sget(HKEY,[]), wrong=sget(WKEY,[]).filter(id=>byId(id));
   const chips=[...PACKS.map((P,i)=>({v:i,t:P.name})),{v:'x',t:'Acak'}];
   app.innerHTML=`
@@ -3005,6 +3272,12 @@ function renderHome(){
       <span class="label">Pilih paket soal</span>
       <div class="chips" role="radiogroup" aria-label="Paket soal">${chips.map(c=>`<button class="chip ${c.v===selPack?'on':''}" data-pack="${c.v}" role="radio" aria-checked="${c.v===selPack}">${c.t}</button>`).join('')}</div>
       <p class="note">${selPack==='x'?'Paket acak menyusun 140 soal dari seluruh bank dengan format ujian asli. Isinya berbeda setiap kali dimulai.':`${PACKS[selPack].name}: 50 Listening (Part A 30, Part B 8, Part C 12), 40 Structure & Written Expression (15 + 25), 50 Reading (5 bacaan).`}</p>
+    </section>
+    <section class="panel">
+      <span class="label">Panduan & trik</span>
+      <h2>Cara mengerjakan tiap bagian</h2>
+      <p>Langkah demi langkah, pola yang wajib dihafal, idiom Listening, dan trik menemukan subjek, verb, dan objek.</p>
+      <div class="row">${GUIDE.map(g=>`<button class="btn" data-guide="${g.k}">${g.t}</button>`).join('')}</div>
     </section>
     <div class="grid2">
       <section class="panel">
@@ -3058,6 +3331,7 @@ function renderHome(){
   app.querySelectorAll('[data-prac]').forEach(b=>b.onclick=()=>{
     const secs=b.dataset.prac.split('');const nm={L:'Listening',SW:'Structure',R:'Reading',LSWR:'Semua'}[b.dataset.prac];
     startTest('prac',packSet(selPack,secs),packLabel(selPack)+' · Latihan '+nm)});
+  app.querySelectorAll('[data-guide]').forEach(b=>b.onclick=()=>renderGuide(b.dataset.guide));
   const gw=document.getElementById('go-wrong');
   if(gw)gw.onclick=()=>startTest('prac',orderIds(wrong),'Ulang soal salah');
   const cw=document.getElementById('clr-wrong');
@@ -3301,7 +3575,7 @@ document.addEventListener('keydown',e=>{
 });
 
 /* tombol Back di Android */
-window.__back=function(){if(st){renderHome();window.scrollTo(0,0);return true}return false};
+window.__back=function(){if(st||inGuide){renderHome();window.scrollTo(0,0);return true}return false};
 
 renderHome();
 </script>
