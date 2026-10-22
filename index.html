@@ -1,0 +1,1341 @@
+<!doctype html>
+<html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}[hidden]{display:none!important}</style>
+<link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#16805f"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="TOEFL ITP"><meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>Simulasi TOEFL ITP</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+/* Layout: lembar jawaban komputer (LJK) — soal di kiri, lembar bulatan jawaban di kanan; tinta "drop-out" hijau, isian pensil grafit */
+:root{
+  --paper:#f4f7f6; --card:#ffffff; --ink:#1b2422; --muted:#5d6966; --line:#d3dcd9;
+  --drop:#16805f; --drop-soft:#e1f1ea; --graphite:#2a2e33; --on-graphite:#ffffff;
+  --good:#2b7a3d; --good-soft:#e3f3e6; --bad:#b93a2e; --bad-soft:#fbe8e5; --warn:#a8660b;
+  --f-ui:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+  --f-read:"Source Serif 4",Georgia,"Times New Roman",serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#111614; --card:#18201d; --ink:#e4ebe8; --muted:#97a5a0; --line:#2b3632;
+  --drop:#4dc39e; --drop-soft:#16302a; --graphite:#dde3e6; --on-graphite:#111614;
+  --good:#74c886; --good-soft:#18301f; --bad:#f08072; --bad-soft:#3a1d19; --warn:#e3a54a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#111614; --card:#18201d; --ink:#e4ebe8; --muted:#97a5a0; --line:#2b3632;
+  --drop:#4dc39e; --drop-soft:#16302a; --graphite:#dde3e6; --on-graphite:#111614;
+  --good:#74c886; --good-soft:#18301f; --bad:#f08072; --bad-soft:#3a1d19; --warn:#e3a54a; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-ui);font-size:15px;line-height:1.55;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--paper)}
+.wrap{max-width:1120px;margin:0 auto;padding-block:20px 48px}
+h1,h2,h3{text-wrap:balance;margin:0;line-height:1.2}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,summary:focus-visible{outline:2px solid var(--drop);outline-offset:2px}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.label{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.btn{border:1px solid var(--line);background:var(--card);border-radius:6px;padding:9px 16px;font-weight:500}
+.btn:hover{border-color:var(--drop)}
+.btn.primary{background:var(--drop);border-color:var(--drop);color:var(--card)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.danger{border-color:var(--bad);color:var(--bad)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+kbd{font-family:var(--f-mono);font-size:12px;border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:0 5px;background:var(--card)}
+
+/* HOME */
+.home{display:grid;gap:28px}
+.masthead{display:grid;gap:10px;padding-block:12px 4px;border-bottom:2px solid var(--drop)}
+.masthead h1{font-size:clamp(28px,4.4vw,42px);font-weight:700;letter-spacing:-.01em}
+.masthead p{margin:0;color:var(--muted);max-width:62ch}
+.formcode{font-family:var(--f-mono);font-size:12px;color:var(--drop);letter-spacing:.06em}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:20px;display:grid;gap:14px;align-content:start;min-width:0}
+.panel h2{font-size:19px}
+.panel p{margin:0;color:var(--muted)}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.fmt{width:100%;border-collapse:collapse;font-size:14px}
+.fmt th,.fmt td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line)}
+.fmt th{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.fmt td.n{font-family:var(--f-mono);text-align:right}
+.hist{display:grid;gap:6px;margin:0;padding:0;list-style:none}
+.hist li{display:flex;justify-content:space-between;gap:12px;border-bottom:1px dashed var(--line);padding-block:6px;font-size:14px}
+.hist .sc{font-family:var(--f-mono);font-weight:600;color:var(--drop)}
+.keys{display:flex;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--muted)}
+
+/* TEST */
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--paper);display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between;padding-block:12px;border-bottom:1px solid var(--line);margin-bottom:20px}
+.bar .sec{display:grid;gap:2px}
+.bar .sec strong{font-size:16px}
+.timer{font-family:var(--f-mono);font-size:22px;font-weight:600;font-variant-numeric:tabular-nums;padding:4px 12px;border:1.5px solid var(--ink);border-radius:6px}
+.timer.low{color:var(--bad);border-color:var(--bad)}
+.test{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:24px;align-items:start}
+@media (max-width:860px){.test{grid-template-columns:minmax(0,1fr)}}
+.qcard{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:22px;display:grid;gap:18px;min-width:0}
+.qhead{display:flex;justify-content:space-between;gap:12px;align-items:baseline;flex-wrap:wrap}
+.qnum{font-family:var(--f-mono);font-weight:600;font-size:14px;color:var(--drop)}
+.direction{font-size:13px;color:var(--muted);border-left:3px solid var(--drop);padding-left:10px}
+.stem{font-size:18px;line-height:1.6}
+.blank{display:inline-block;min-width:5.5em;border-bottom:2px solid var(--ink);margin:0 2px}
+.u{position:relative;display:inline-block;text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:4px;margin-bottom:16px}
+.u::after{content:attr(data-l);position:absolute;left:50%;transform:translateX(-50%);top:1.55em;font-family:var(--f-mono);font-size:11px;font-weight:600;color:var(--drop)}
+.opts{display:grid;gap:8px}
+.opt{display:flex;gap:14px;align-items:center;text-align:left;width:100%;background:transparent;border:1px solid var(--line);border-radius:8px;padding:10px 14px;min-height:48px}
+.opt:hover:not(:disabled){border-color:var(--drop);background:var(--drop-soft)}
+.bub{flex:none;width:30px;height:30px;border-radius:50%;border:1.5px solid var(--drop);color:var(--drop);display:grid;place-items:center;font-family:var(--f-mono);font-size:13px;font-weight:600}
+.opt.sel .bub{background:var(--graphite);border-color:var(--graphite);color:var(--on-graphite)}
+.opt.sel{border-color:var(--graphite)}
+.opt.right{border-color:var(--good);background:var(--good-soft)}
+.opt.right .bub{background:var(--good);border-color:var(--good);color:var(--card)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-soft)}
+.opt.wrong .bub{background:var(--bad);border-color:var(--bad);color:var(--card)}
+.opt:disabled{cursor:default}
+.opt .uline{text-decoration:underline;text-underline-offset:3px}
+.feedback{border-radius:8px;padding:14px 16px;display:grid;gap:6px;font-size:14px}
+.feedback.ok{background:var(--good-soft)}
+.feedback.no{background:var(--bad-soft)}
+.feedback strong{font-size:15px}
+.audio{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:14px;border:1px dashed var(--drop);border-radius:8px;background:var(--drop-soft)}
+.play{display:flex;align-items:center;gap:10px;border:none;background:var(--drop);color:var(--card);border-radius:999px;padding:9px 18px 9px 12px;font-weight:600}
+.play:disabled{opacity:.45;cursor:not-allowed}
+.play svg{width:20px;height:20px}
+.wave{display:flex;gap:3px;align-items:end;height:18px}
+.wave i{width:3px;background:var(--drop);border-radius:2px;height:4px}
+.playing .wave i{animation:w .9s ease-in-out infinite}
+.wave i:nth-child(2){animation-delay:.15s}.wave i:nth-child(3){animation-delay:.3s}.wave i:nth-child(4){animation-delay:.45s}.wave i:nth-child(5){animation-delay:.6s}
+@keyframes w{0%,100%{height:4px}50%{height:18px}}
+@media (prefers-reduced-motion:reduce){.playing .wave i{animation:none;height:12px}}
+.transcript{font-size:14px;display:grid;gap:4px;background:var(--paper);border-radius:6px;padding:12px}
+.transcript b{font-family:var(--f-mono);font-size:12px;color:var(--drop)}
+.passage{font-family:var(--f-read);font-size:16.5px;line-height:1.7;background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:16px 18px;max-height:46vh;overflow:auto;display:grid;gap:12px}
+.passage h3{font-family:var(--f-ui);font-size:14px}
+.passage p{margin:0;max-width:68ch}
+.passage .pn{font-family:var(--f-mono);font-size:11px;color:var(--muted);margin-right:6px}
+.nav{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.flag{border:1px solid var(--line);background:transparent;border-radius:6px;padding:5px 10px;font-size:13px}
+.flag.on{border-color:var(--warn);color:var(--warn)}
+
+/* LJK SHEET */
+.sheet{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:16px;display:grid;gap:14px;position:sticky;top:calc(env(safe-area-inset-top,0px) + 78px)}
+@media (max-width:860px){.sheet{position:static}}
+.sheet-head{display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid var(--drop);padding-bottom:8px}
+.sheet-head strong{color:var(--drop);font-size:14px;letter-spacing:.04em}
+.grp{display:grid;gap:6px}
+.cells{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.cell{position:relative;border:1.5px solid var(--drop);background:transparent;color:var(--drop);border-radius:50%;aspect-ratio:1;max-width:100%;font-family:var(--f-mono);font-size:12px;font-weight:600;display:grid;place-items:center;padding:0}
+.cell.ans{background:var(--graphite);border-color:var(--graphite);color:var(--on-graphite)}
+.cell.cur{outline:2px solid var(--drop);outline-offset:2px}
+.cell.ok{background:var(--good);border-color:var(--good);color:var(--card)}
+.cell.no{background:var(--bad);border-color:var(--bad);color:var(--card)}
+.cell.flg::after{content:"";position:absolute;top:-2px;right:-2px;width:8px;height:8px;border-radius:50%;background:var(--warn)}
+.legend{display:flex;flex-wrap:wrap;gap:10px;font-size:12px;color:var(--muted)}
+.legend span{display:flex;align-items:center;gap:5px}
+.legend i{width:11px;height:11px;border-radius:50%;border:1.5px solid var(--drop)}
+.legend i.a{background:var(--graphite);border-color:var(--graphite)}
+.legend i.f{background:var(--warn);border-color:var(--warn)}
+
+/* RESULT */
+.result{display:grid;gap:24px}
+.score{display:grid;grid-template-columns:auto 1fr;gap:24px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:24px}
+@media (max-width:600px){.score{grid-template-columns:1fr}}
+.big{font-family:var(--f-mono);font-size:clamp(52px,9vw,76px);font-weight:600;line-height:1;color:var(--drop);font-variant-numeric:tabular-nums}
+.bars{display:grid;gap:12px;min-width:0}
+.barrow{display:grid;grid-template-columns:minmax(0,150px) 1fr auto;gap:12px;align-items:center;font-size:14px}
+.track{height:10px;background:var(--paper);border:1px solid var(--line);border-radius:999px;overflow:hidden}
+.fill{height:100%;background:var(--drop)}
+.note{font-size:13px;color:var(--muted);margin:0}
+.review{display:grid;gap:8px}
+.review details{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:12px 16px}
+.review summary{display:flex;gap:12px;align-items:center;cursor:pointer;list-style:none}
+.review summary::-webkit-details-marker{display:none}
+.review .mk{flex:none;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:700;color:var(--card)}
+.review .mk.ok{background:var(--good)}.review .mk.no{background:var(--bad)}.review .mk.na{background:var(--muted)}
+.review .sum{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.review .body{display:grid;gap:8px;padding-top:12px;font-size:14px}
+.tag{font-family:var(--f-mono);font-size:12px}
+.ok-t{color:var(--good)}.no-t{color:var(--bad)}
+
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1.5px solid var(--line);background:var(--card);border-radius:999px;padding:7px 16px;font-weight:500}
+.chip:hover{border-color:var(--drop)}
+.chip.on{background:var(--drop);border-color:var(--drop);color:var(--card)}
+.chips.sm .chip{padding:4px 12px;font-size:13px}
+.feedback.na{background:var(--paper);border:1px solid var(--line)}
+.why{display:grid;gap:2px}
+.why p{margin:0}
+.why.no .label{color:var(--bad)}
+.why.ok .label{color:var(--good)}
+.others summary{cursor:pointer;font-size:13px;color:var(--muted)}
+.others ul{margin:6px 0 0;padding-left:18px;display:grid;gap:4px}
+.tip{border:1px solid var(--drop);border-left-width:4px;border-radius:6px;padding:12px 14px;display:grid;gap:4px;font-size:14px}
+.tip .label{color:var(--drop)}
+.tip p{margin:0;max-width:72ch}
+.topics{display:grid;gap:6px}
+.topic{border-bottom:1px solid var(--line);padding-block:6px}
+.topic summary{display:flex;justify-content:space-between;gap:12px;cursor:pointer;font-weight:500}
+.topic .cnt{color:var(--bad);font-size:13px;flex:none}
+.topic p{margin:6px 0 4px;font-size:14px;color:var(--muted);max-width:72ch}
+.legend i.g{background:var(--good);border-color:var(--good)}
+.legend i.r{background:var(--bad);border-color:var(--bad)}
+.stem.sm{font-size:16px}
+@media (pointer:coarse){.keys{display:none}}
+.hidden-sm{}
+@media (max-width:520px){.hidden-sm{display:none}.stem{font-size:17px}.qcard{padding:16px}}
+</style>
+
+</head><body><div class="wrap" id="app"></div>
+
+<script>
+/* ================= MATERI SINGKAT ================= */
+const TIPS={
+ 'l-correction':['Koreksi informasi','Kata "Actually…", "Not exactly…", "In fact…" menandakan pembicara kedua mengoreksi anggapan pembicara pertama. Jawabannya biasanya informasi baru dari pembicara kedua.'],
+ 'l-but':['Pola "…, but …"','Bagian setelah "but" adalah inti jawaban. "I\'d love to, but…" atau "I was going to, but…" berarti tidak jadi atau tidak bisa.'],
+ 'l-suggest':['Ungkapan saran','"Why don\'t you…", "Why not…", "How about…", "Did you check…?", "I\'d … instead" adalah saran. Pertanyaan "What does the man suggest?" mencari isi saran itu.'],
+ 'l-echo':['Jebakan kata yang sama','Pilihan yang memakai kata persis dari audio sering justru salah. Jawaban benar biasanya memakai sinonim atau parafrase.'],
+ 'l-implied':['Makna tersirat','Pembicara sering tidak menjawab langsung. Simpulkan dari alasan, kebiasaan, atau saran yang ia sebut ("That\'s why…", "I wouldn\'t go out without…").'],
+ 'l-plan':['Rencana dan niat','"Not yet, but I\'m planning to…", "I\'m going to…", "I intend to…" menunjukkan sesuatu yang belum terjadi tapi akan dilakukan.'],
+ 'l-main':['Topik utama ceramah','Ide pokok hampir selalu disebut di awal ("Today we\'ll look at…"). Nama tokoh, angka, atau contoh di akhir biasanya hanya detail pendukung.'],
+ 'l-detail':['Detail yang disebut','Untuk "According to the speaker…", cocokkan dengan kalimat spesifik di audio. Waspadai pilihan yang mencampur dua detail berbeda.'],
+ 'l-agree':['Ungkapan setuju','"So do I / So did I", "Me too", "Neither do I", "You can say that again", "Tell me about it" berarti setuju dengan pembicara sebelumnya.'],
+ 'l-idiom':['Idiom percakapan','Idiom tidak diartikan harfiah. "You can say that again" = sangat setuju. "Do you mind…?" dijawab "Not at all" = boleh. "I could hardly keep my eyes open" = sangat bosan/mengantuk. "Don\'t count on it" = jangan berharap. "In a heartbeat" = tanpa ragu.'],
+ 'l-condition':['Pengandaian dan penyesalan','"I would if I had…" berarti kenyataannya tidak. "I wish I hadn\'t…" berarti menyesal sudah melakukannya. Maknanya kebalikan dari bentuk kalimatnya.'],
+ 'l-negative':['Kata bermakna negatif','"Hardly", "rarely", "barely", "seldom" berarti hampir tidak. "Hardly anyone deserved it more" = dialah yang paling layak. Negatif + comparative bermakna sangat positif: "Couldn\'t be better" = sangat baik.'],
+ 'sva':['Subject–verb agreement','Kata kerja mengikuti subjek inti, bukan kata benda di frasa sisipan. Each / every / the number of / neither of → tunggal. Subjek gabungan "A and B" → jamak. Pada either…or dan neither…nor, ikuti subjek yang paling dekat.'],
+ 'inversion':['Inversi','Jika kalimat dibuka kata negatif atau terbatas (Not until, Only after, Rarely, Seldom, Never, Not only), urutannya menjadi auxiliary + subjek + verb. Contoh: "Rarely have I seen…", "Not only does she…".'],
+ 'appositive':['Appositive','Frasa benda di antara koma yang menjelaskan subjek, tanpa kata kerja: "Jakarta, the capital of Indonesia, is…". Jika memakai who/which, klausanya harus punya kata kerja.'],
+ 'comparative':['Perbandingan','Comparative: -er / more + than. Superlative: the + -est / most. Pola paralel: "The more…, the more…". Jangan menggandakan, misalnya "more larger".'],
+ 'participle':['Participle sebagai keterangan','Past participle (V3) bermakna pasif: "Founded in 1636, Harvard…", "The bridge built last year…". Present participle (V-ing) bermakna aktif.'],
+ 'so-such':['So / such … that','so + adjective/adverb + that, misalnya "so quickly that". such + (a) + adjective + noun + that, misalnya "such a fast plant that".'],
+ 'conjunction':['Konjungsi vs preposisi','Konjungsi (although, because, until, while) diikuti klausa S + V. Preposisi (despite, in spite of, because of, during) diikuti kata benda atau V-ing. Although dan but tidak dipakai bersamaan.'],
+ 'subjunctive':['Subjunctive','Setelah "it is essential/important/necessary that" atau "suggest/recommend/insist that", pakai bentuk dasar verb untuk semua subjek: "that he submit".'],
+ 'missing-verb':['Kalimat tanpa kata kerja','Setiap kalimat butuh subjek dan kata kerja utama. Cek dulu apakah kalimat sudah punya verb. V-ing atau to-infinitive saja tidak bisa menjadi verb utama.'],
+ 'preposition':['Preposisi pembanding','"Unlike / Like + noun" dipakai untuk membandingkan. "Alike" adalah adjective/adverb dan tidak diikuti noun ("They look alike").'],
+ 'parallel':['Paralelisme','Unsur dalam daftar atau yang dihubungkan and/or/but harus sejenis: noun–noun–noun, V-ing–V-ing, verb lampau–verb lampau.'],
+ 'wordform':['Bentuk kata','Adjective menerangkan noun (a successful flight). Adverb menerangkan verb (explained clearly). "Interesting" = menarik (sifat sesuatu), "interested" = tertarik (perasaan orang).'],
+ 'countable':['Uncountable noun','Information, equipment, furniture, advice, news, luggage tidak punya bentuk jamak dan memakai verb tunggal. Sebaliknya, "one of the" selalu diikuti noun jamak.'],
+ 'pronoun':['Kasus pronoun','Setelah preposisi (between, for, with, to) pakai object pronoun: me, him, her, us, them. Jadi "between you and me".'],
+ 'tense':['Tenses','Present perfect: have/has + V3 (has flown). Past perfect: had + V3 untuk kejadian sebelum kejadian lampau lain ("By the time we arrived, the film had started"). Durasi memakai "for", titik waktu memakai "since".'],
+ 'gerund-inf':['Gerund dan infinitive','Gerund (V-ing) bisa menjadi subjek ("Managing time is…") dan dipakai setelah preposisi (look forward to visiting, excited about opening). Pola ask/tell/want + objek + to + verb.'],
+ 'conditional':['Kalimat pengandaian','Type 1: If + present, will + V ("If it rains, …"). Type 2: If + past, would + V ("If I had time, I would…"). Type 3 (masa lalu yang tidak terjadi): If + had + V3, would have + V3. Klausa "if" tidak memakai will.'],
+ 'noun-clause':['Noun clause','Klausa yang diawali what, that, whether, atau how bisa menjadi subjek. "What is known about Majapahit comes from…": "What is known…" adalah subjek dari verb "comes".'],
+ 'relative':['Relative pronoun','Who untuk orang (subjek), whom untuk orang (objek), which untuk benda, whose untuk kepemilikan. Klausa relatif harus punya verb sendiri.'],
+ 'paired':['Konjungsi berpasangan','Pasangannya tetap: either…or, neither…nor, both…and, not only…but also. Jangan dicampur, misalnya "neither…or".'],
+ 'passive':['Kalimat pasif','Jika subjek dikenai tindakan, pakai be + V3: "The Games were held", "My laptop needs to be repaired".'],
+ 'article':['Artikel a / an','"An" dipakai sebelum bunyi vokal (an engineer, an hour). "A" dipakai sebelum bunyi konsonan (a university, a European).'],
+ 'modal':['Modal verb','Setelah modal (must, can, should, will, may) langsung bentuk dasar verb, tanpa "to" dan tanpa -s: "must wear".'],
+ 'r-main':['Ide pokok','Cari pilihan yang mencakup seluruh bacaan atau paragraf. Pilihan yang hanya membahas satu detail terlalu sempit, yang menyebut hal di luar bacaan terlalu luas.'],
+ 'r-detail':['Pertanyaan detail','Jawaban "According to the passage…" tertulis jelas. Temukan kata kuncinya di bacaan, lalu baca kalimat itu dengan teliti. Angka dan kata yang mirip sering jadi jebakan.'],
+ 'r-vocab':['Kosakata dalam konteks','Ganti kata itu dengan setiap pilihan, lalu baca ulang kalimatnya. Pilih yang maknanya tetap masuk akal.'],
+ 'r-ref':['Rujukan kata','Kata ganti (it, its, they, this) atau kata benda umum merujuk pada kata benda sebelumnya yang cocok jumlah dan maknanya.'],
+ 'r-infer':['Inferensi','Jawabannya tidak tertulis langsung, tapi pasti benar berdasarkan bacaan. Hindari pilihan yang terlalu jauh atau bertentangan dengan teks.'],
+ 'r-notmentioned':['Pertanyaan NOT mentioned','Tandai setiap pilihan yang ada di bacaan. Pilihan yang tersisa adalah jawabannya.'],
+ 'r-purpose':['Tujuan penulis','"Why does the author mention…" menanyakan fungsi detail itu: memberi contoh, menjelaskan, atau mendukung ide utama.']
+};
+
+/* ================= BACAAN & CERAMAH ================= */
+const PASSAGES={
+ borobudur:{title:'Borobudur',paras:[
+  "Borobudur, located in Central Java, is the largest Buddhist monument in the world. It was built during the eighth and ninth centuries under the Sailendra dynasty. The monument consists of nine stacked platforms: six square ones at the base and three circular ones above them, crowned by a large central stupa. Its walls and balustrades are decorated with 2,672 relief panels and 504 statues of the Buddha. Pilgrims traditionally walked around each level in a clockwise direction, so that the carved stories unfolded in order as they climbed toward the top.",
+  "For several centuries the monument was abandoned. Volcanic ash and jungle growth slowly covered it, and it was largely forgotten by the outside world. In 1814, Sir Thomas Stamford Raffles, then the British lieutenant-governor of Java, learned of its existence and sent an engineer to investigate. Clearing the site took weeks of work. A major restoration supported by UNESCO took place between 1975 and 1982, and in 1991 Borobudur was listed as a World Heritage Site. Today it is one of Indonesia's most visited attractions."]},
+ mangrove:{title:'Mangrove Forests',paras:[
+  "Mangroves are trees and shrubs that grow along tropical and subtropical coastlines, in the zone where land meets the sea. They can survive in salty water that would kill most other plants, and many species have special roots that rise above the mud to take in air during high tide.",
+  "These forests provide important benefits to coastal communities. Their dense roots trap sediment and reduce the force of waves, which helps protect shorelines from erosion and storms. They also serve as nurseries where young fish, crabs, and shrimp can grow safely before moving to the open sea. In addition, mangrove soils store large amounts of carbon, which makes these forests valuable in the fight against climate change.",
+  "Indonesia has more mangrove forest than any other country. However, large areas have been cleared over recent decades, mainly to make room for fish and shrimp ponds, as well as for coastal development. Many local governments and communities now run replanting programs, although scientists point out that restored forests may take many years to provide the full benefits of the original ones."]},
+ batik:{title:'Batik',paras:[
+  "Batik is a technique of decorating cloth by applying wax to the parts that should not absorb dye. Craftspeople traditionally use a small copper tool called a canting to draw lines of hot wax by hand. After the cloth is dyed, the wax is removed, revealing the pattern underneath. Because the process may be repeated several times with different colors, a single piece of hand-drawn batik can take weeks or even months to complete. A faster method uses a copper stamp, known as a cap, to print the wax onto the fabric.",
+  "Batik designs often carry meaning. In the royal courts of Yogyakarta and Surakarta, certain patterns, such as parang, were once reserved for members of the nobility. Batik from coastal towns like Pekalongan, by contrast, tends to use brighter colors and shows influences from Chinese, Arab, and European traders who visited these ports. In 2009, UNESCO recognized Indonesian batik as part of the Intangible Cultural Heritage of Humanity, and October 2 is now celebrated as National Batik Day."]},
+ sleep:{title:'Sleep and Memory',paras:[
+  "Many students believe that staying up all night is the best way to prepare for an exam. Research on sleep, however, suggests the opposite. While we sleep, the brain does not simply rest. It replays and organizes information gathered during the day, a process scientists call memory consolidation. During deep sleep, new memories appear to be transferred from the hippocampus, a region that stores information temporarily, to other parts of the brain where they can be kept for a longer time.",
+  "Experiments have shown that people who sleep after learning a list of words remember more of them the next day than people who stay awake for the same amount of time. Lack of sleep also reduces attention and makes it harder to learn new material in the first place. For these reasons, health experts recommend that adults sleep at least seven hours a night. They also advise avoiding bright screens before bed, since the light can delay the release of melatonin, a hormone that helps the body prepare for sleep."]},
+ rafflesia:{title:'Rafflesia',paras:[
+  "Rafflesia arnoldii, found in the rainforests of Sumatra and Borneo, produces the largest single flower in the world. A fully open bloom can measure nearly one meter across and weigh several kilograms. The plant is unusual in another way as well: it has no leaves, stems, or true roots. Instead, it lives as a parasite inside a type of tropical vine, taking all of its water and nutrients from its host.",
+  "For most of its life the plant is invisible, growing as thin threads within the vine. Eventually a bud breaks through the bark and slowly swells over a period of several months. When the flower finally opens, it gives off a strong smell similar to rotting meat. This odor attracts flies, which carry pollen from one flower to another. The bloom lasts only about a week before it turns black and collapses. Because the plant depends on a specific host and on forest habitat, it is threatened by deforestation."]},
+ krakatau:{title:'The 1883 Eruption of Krakatau',paras:[
+  "In August 1883, the volcanic island of Krakatau, located in the Sunda Strait between Java and Sumatra, erupted with tremendous force. The final explosions were so loud that they were heard on an island in the Indian Ocean nearly 4,800 kilometers away. Most of the island disappeared, and the eruption generated huge waves, or tsunamis, that struck the coasts of Java and Sumatra. More than 36,000 people lost their lives, most of them because of the waves rather than the eruption itself.",
+  "The effects of the disaster were felt around the world. Fine ash and gases rose high into the atmosphere, where they blocked part of the sunlight. As a result, average global temperatures dropped slightly for several years. People in Europe and North America reported unusually red and colorful sunsets. In 1927, a new volcano began to rise from the sea where Krakatau had been. Named Anak Krakatau, or \"Child of Krakatau,\" it remains active today."]},
+ orangutan:{title:'Orangutans',paras:[
+  "Orangutans are great apes found only on the islands of Borneo and Sumatra. Their name comes from Malay words meaning \"person of the forest.\" Orangutans spend most of their lives in trees, where they find fruit, leaves, and insects to eat. Each night, an adult orangutan builds a new nest high in the branches by bending and weaving leafy branches together.",
+  "Orangutans have one of the slowest reproduction rates of any mammal. A female usually gives birth only once every seven or eight years. The young orangutan stays with its mother for several years, learning which plants are safe to eat and how to build nests. Because of this slow rate, populations recover very slowly when their numbers fall. The greatest threat to orangutans is the loss of forest habitat, which is cleared for farming, plantations, and logging. Three species are now recognized, and all of them are listed as critically endangered."]},
+ gardencity:{title:'The Garden City',paras:[
+  "At the end of the nineteenth century, many industrial cities in Britain were crowded, polluted, and unhealthy. In 1898, a British reformer named Ebenezer Howard proposed a solution in a book later published as Garden Cities of To-morrow. Howard imagined new towns that would combine the advantages of the city, such as jobs and culture, with the advantages of the countryside, such as fresh air and open space.",
+  "In Howard's plan, each garden city would have a fixed population of about 32,000 people. The town would be arranged in a circular pattern, with a central park surrounded by public buildings, homes, and wide avenues. Factories would be placed at the edge of the town, and the whole settlement would be surrounded by a permanent belt of farmland. When a town reached its limit, a new garden city would be built nearby instead of letting the first one grow larger. Two towns were built on these principles in England: Letchworth, begun in 1903, and Welwyn Garden City, begun in 1920. Howard's ideas later influenced the planning of new towns in many countries."]},
+ subak:{title:'Subak',paras:[
+  "In Bali, rice farmers have managed water through a system called subak for more than a thousand years. A subak is a community of farmers who share water from a single source, such as a spring or a river. The water flows through a network of canals, tunnels, and small dams, and it is divided among the rice terraces according to rules agreed upon by the members.",
+  "The system is closely connected to Balinese religious life. Water temples are located at springs, at lakes, and along the canals, and priests and farmers meet at these temples to decide when to plant and how to share water. By coordinating planting schedules, neighboring fields can be flooded or left dry at the same time, which helps reduce pests. In 2012, UNESCO listed the cultural landscape of Bali, including the subak system, as a World Heritage Site."]},
+ gutenberg:{title:"Gutenberg's Printing Press",paras:[
+  "Before the fifteenth century, books in Europe were copied by hand, usually by monks or professional scribes. A single book could take months to produce, so books were rare and expensive. Around 1440, Johannes Gutenberg, a goldsmith from the German city of Mainz, developed a printing system that changed this situation. His key idea was movable metal type: individual letters cast in metal that could be arranged into pages, printed, and then rearranged for new pages. He also developed an oil-based ink that stuck well to metal, and he adapted a press similar to those used to make wine.",
+  "Gutenberg's most famous work, a Bible printed around 1455, showed that printed books could be as beautiful as handwritten ones. The new technology spread quickly. By 1500, printing shops were operating in more than 200 European cities, and millions of books had been produced. Because books became cheaper, more people learned to read, and new ideas in science and religion could travel faster than ever before."]}
+};
+const TALK1=[{who:'N',t:'Listen to part of a lecture in a biology class.'},{who:'M',t:'Today I want to talk about how honeybees tell each other where to find food. When a worker bee returns to the hive after finding flowers, she performs a movement called the waggle dance. She moves in a pattern shaped like a figure eight. The direction of the straight part of the dance shows the direction of the food in relation to the sun. The length of the waggle tells the other bees how far away the food is. This behavior was first explained by the Austrian scientist Karl von Frisch, who later received a Nobel Prize for his research.'}];
+const TALK2=[{who:'N',t:'Listen to part of a lecture in a marine science class.'},{who:'W',t:"Today we'll look at coral reefs and the problem of coral bleaching. Corals are animals that live together with tiny algae inside their tissues. The algae produce food through photosynthesis and give corals their bright colors. When ocean water becomes too warm for a long period, corals push the algae out. Without the algae, the coral turns white, which is why we call this process bleaching. Bleached corals are not dead, but they are weaker, and they may die if the water stays warm for too long."}];
+const TALK3=[{who:'N',t:'Listen to part of a talk in a geography class.'},{who:'M',t:"During the 1850s, the British naturalist Alfred Russel Wallace traveled through the islands of what is now Indonesia. He noticed something surprising. The animals on Bali looked very similar to those in mainland Asia, but on Lombok, just across a narrow strait, many animals were more like those in Australia. Wallace drew an imaginary boundary between the two groups, which is now known as the Wallace Line. Scientists later explained that a deep channel of water lies along this line. Even when sea levels dropped during the ice ages, this channel never dried up, so most land animals could not cross it."}];
+
+const TALK4=[{who:'N',t:'Listen to part of a lecture in a history class.'},{who:'M',t:"Today we'll discuss nutmeg and the Banda Islands. In the sixteenth and seventeenth centuries, nutmeg was one of the most valuable goods in the world. At that time it grew only on the Banda Islands, a small group of islands in eastern Indonesia. European traders could sell it in Europe for many times the price they paid. The Dutch and the English both fought for control of the islands. In 1667, they signed the Treaty of Breda. Under this agreement, the English gave up their claim to Run, a tiny nutmeg island in the Bandas. In return, the Dutch let the English keep New Amsterdam, a small colony in North America. That colony later became New York City."}];
+const TALK5=[{who:'N',t:'Listen to part of a lecture in an urban planning class.'},{who:'W',t:"Today's topic is the urban heat island effect. Cities are often several degrees warmer than the countryside around them. One reason is that materials like asphalt and concrete absorb heat during the day and release it slowly at night. Cities also have fewer trees, and trees cool the air by providing shade and releasing water through their leaves. Heat from cars, factories, and air conditioners adds even more warmth. To reduce the effect, some cities are planting more trees, building green roofs, and using light-colored materials that reflect sunlight."}];
+
+/* ================= BANK SOAL =================
+   w = alasan tiap pilihan salah ('' untuk kunci), t = kunci materi */
+const PACKS=[
+{name:'Paket 1',items:[
+ {sec:'L',audio:[{who:'W',t:"I can't believe the library closes at six on Fridays."},{who:'M',t:"Actually, they extended the hours this semester. It's open until ten now."},{who:'N',t:'What does the man mean?'}],
+  q:'What does the man mean?',opts:['The library is closed on Fridays.','The library is now open later.','He prefers to study at home.','The library will close early this week.'],a:1,t:'l-correction',
+  w:['Perpustakaan tidak tutup pada hari Jumat. Wanita hanya mengira jam tutupnya pukul enam.','','Pria sama sekali tidak menyebut belajar di rumah.','Kebalikannya: jam buka justru diperpanjang.'],
+  ex:'"Extended the hours… open until ten now" berarti jam buka diperpanjang.'},
+ {sec:'L',audio:[{who:'M',t:"Are you going to Professor Lee's review session tonight?"},{who:'W',t:"I'd love to, but I'm working the late shift tonight."},{who:'N',t:'What does the woman mean?'}],
+  q:'What does the woman mean?',opts:['She will go after work.','She has already studied the material.','She cannot attend the session.','She does not like the professor.'],a:2,t:'l-but',
+  w:['Ia kerja shift malam, jadi tidak sempat datang setelahnya.','Ia tidak menyebut sudah belajar.','','"I\'d love to" justru bernada positif, tidak ada tanda tidak suka.'],
+  ex:'"I\'d love to, but…" berarti menolak. Ia harus bekerja, jadi tidak bisa datang.'},
+ {sec:'L',audio:[{who:'W',t:'This printer has jammed again.'},{who:'M',t:"Why don't you try the one in the computer lab down the hall?"},{who:'N',t:'What does the man suggest?'}],
+  q:'What does the man suggest?',opts:['Use a different printer.','Fix the printer herself.','Ask the lab assistant for paper.','Print the paper tomorrow.'],a:0,t:'l-suggest',
+  w:['','Pria menyarankan memakai printer lain, bukan memperbaikinya.','Kertas tidak dibahas. "Lab" hanya menunjukkan lokasi printer lain.','Tidak ada saran untuk menunda.'],
+  ex:'"Why don\'t you…" adalah saran. "The one in the computer lab" berarti printer lain.'},
+ {sec:'L',audio:[{who:'M',t:'Did you finish the chemistry report?'},{who:'W',t:"Finish it? I haven't even started."},{who:'N',t:'What does the woman mean?'}],
+  q:'What does the woman mean?',opts:['She finished it early.','She needs help finishing it.','She lost the report.','She has not begun the report.'],a:3,t:'l-echo',
+  w:['Kata "finish" dari audio dipakai sebagai jebakan. Ia justru belum mulai.','Ia belum mulai, jadi belum bisa disebut sedang menyelesaikan.','Tidak ada yang hilang.',''],
+  ex:'"Haven\'t even started" berarti belum mulai sama sekali.'},
+ {sec:'L',audio:[{who:'W',t:'The bus was so crowded I had to stand the whole way.'},{who:'M',t:"That's why I ride my bike to campus."},{who:'N',t:'What does the man imply?'}],
+  q:'What does the man imply?',opts:['He also had to stand on the bus.','He cycles to avoid crowded buses.','He wants to buy a car.','The bus is usually empty.'],a:1,t:'l-implied',
+  w:['Pria naik sepeda, jadi ia tidak ikut berdiri di bus.','','Mobil tidak disebut.','Bertentangan dengan audio: bus justru penuh.'],
+  ex:'"That\'s why…" menunjukkan alasan. Ia bersepeda karena bus penuh sesak.'},
+ {sec:'L',audio:[{who:'M',t:"I'm thinking of dropping my statistics class."},{who:'W',t:'Before you do, why not talk to a tutor at the learning center?'},{who:'N',t:'What does the woman suggest?'}],
+  q:'What does the woman suggest?',opts:['Drop the class immediately.','Change to a different major.','Get help from a tutor first.','Study with the man.'],a:2,t:'l-suggest',
+  w:['"Before you do" berarti wanita meminta keputusan itu ditunda.','Jurusan tidak dibahas.','','Ia menyarankan tutor, bukan belajar bersama dirinya.'],
+  ex:'"Before you do, why not…" adalah saran untuk mencoba bantuan tutor dulu.'},
+ {sec:'L',audio:[{who:'W',t:'Have you seen the new art exhibit at the museum?'},{who:'M',t:"Not yet, but I'm planning to go this weekend."},{who:'N',t:'What does the man mean?'}],
+  q:'What does the man mean?',opts:['He has already seen the exhibit twice.','He is not interested in art.','The exhibit closes this weekend.','He intends to see it soon.'],a:3,t:'l-plan',
+  w:['"Not yet" berarti belum pernah melihatnya.','Ia berencana pergi, berarti tertarik.','"This weekend" adalah rencananya, bukan jadwal tutup pameran.',''],
+  ex:'"Not yet, but I\'m planning to go" berarti belum, tapi akan segera pergi.'},
+ {sec:'L',audio:[{who:'M',t:'This soup could use a little more salt.'},{who:'W',t:'The doctor told me to cut back, so I left it out.'},{who:'N',t:'What does the woman imply?'}],
+  q:'What does the woman imply?',opts:['She left out salt for health reasons.','She forgot to add salt.','The soup is too salty.','She does not know how to cook.'],a:0,t:'l-implied',
+  w:['','"I left it out" berarti sengaja, bukan lupa.','Pria justru bilang supnya kurang asin.','Tidak ada petunjuk tentang kemampuan memasak.'],
+  ex:'Dokter menyuruhnya mengurangi garam, jadi ia sengaja tidak menambahkannya.'},
+ {sec:'L',talk:true,audio:[...TALK1,{who:'N',t:'What is the talk mainly about?'}],
+  q:'What is the talk mainly about?',opts:['How bees build their hives','The life of Karl von Frisch','How honeybees share the location of food','Why bees are attracted to flowers'],a:2,t:'l-main',
+  w:['Sarang lebah tidak dibahas.','Von Frisch hanya disebut sebagai detail di akhir.','','Alasan lebah tertarik pada bunga tidak dijelaskan.'],
+  ex:'Kalimat pembuka menyebut topiknya: bagaimana lebah memberi tahu lokasi makanan.'},
+ {sec:'L',talk:true,audio:[...TALK1,{who:'N',t:'According to the speaker, what does the length of the waggle show?'}],
+  q:'According to the speaker, what does the length of the waggle show?',opts:['The type of flower','The distance to the food','The number of bees needed','The time of day'],a:1,t:'l-detail',
+  w:['Jenis bunga tidak disebut.','','Jumlah lebah tidak disebut.','Matahari dipakai sebagai acuan arah, bukan waktu.'],
+  ex:'"The length of the waggle tells… how far away the food is" berarti jarak ke makanan.'},
+ {sec:'S',q:'___ the Rocky Mountains, the Appalachians are much older.',opts:['Unlike','Dislike','Not alike','Unlikely'],a:0,t:'preposition',
+  w:['','"Dislike" adalah kata kerja (tidak suka).','"Alike" tidak bisa diikuti kata benda.','"Unlikely" adjective yang berarti kecil kemungkinannya.'],
+  ex:'"Unlike + noun" adalah preposisi untuk membandingkan dua hal.'},
+ {sec:'S',q:'The Pacific Ocean ___ largest ocean on Earth.',opts:['the','it is the','is the','being the'],a:2,t:'missing-verb',
+  w:['Tanpa kata kerja, kalimatnya tidak lengkap.','"It" mengulang subjek "The Pacific Ocean".','','"Being" tidak bisa menjadi kata kerja utama.'],
+  ex:'Kalimat belum punya kata kerja utama, jadi butuh "is" + "the" untuk superlatif.'},
+ {sec:'S',q:'Not until the eighteenth century ___ widely used in Europe.',opts:['forks were','that forks were','forks being','were forks'],a:3,t:'inversion',
+  w:['Urutan normal (S + V) salah setelah "Not until" di awal kalimat.','"That" tidak dibutuhkan dan urutannya tetap tidak terbalik.','"Being" bukan kata kerja lengkap.',''],
+  ex:'"Not until…" di awal kalimat menuntut inversi: "were forks".'},
+ {sec:'S',q:'Marie Curie, ___, was the first woman to win a Nobel Prize.',opts:['she was a physicist','a physicist and chemist','who a physicist','was a physicist'],a:1,t:'appositive',
+  w:['Membuat dua klausa dalam satu kalimat tanpa konjungsi.','','Klausa "who" butuh kata kerja (who was a physicist).','Ada kata kerja tanpa subjek di antara koma.'],
+  ex:'Di antara koma dibutuhkan appositive, yaitu frasa benda tanpa kata kerja.'},
+ {sec:'S',q:'The more you practice, ___ you will become.',opts:['more confident','the most confident','the more confident','most confidently'],a:2,t:'comparative',
+  w:['Kurang "the" untuk pola paralel.','Superlatif tidak cocok dengan pola "the more…".','','Ini superlatif sekaligus adverb, padahal "become" butuh adjective.'],
+  ex:'Pola paralel: "the + comparative…, the + comparative…".'},
+ {sec:'S',q:'___ in 1636, Harvard is the oldest institution of higher learning in the United States.',opts:['Founding','It was founded','To found','Founded'],a:3,t:'participle',
+  w:['"Founding" bermakna aktif, seolah Harvard yang mendirikan.','Membuat dua klausa tanpa penghubung.','To-infinitive menyatakan tujuan, bukan keterangan waktu.',''],
+  ex:'Harvard didirikan (pasif), jadi dipakai past participle "Founded".'},
+ {sec:'S',q:'Bamboo grows ___ that some species can increase in height by nearly a meter in a single day.',opts:['so quickly','so quick','such quickly','too quickly'],a:0,t:'so-such',
+  w:['','"Quick" adalah adjective, padahal yang diterangkan kata kerja "grows".','"Such" diikuti kata benda, bukan adverb.','"Too" tidak berpasangan dengan "that".'],
+  ex:'Pola "so + adverb + that". "Grows" kata kerja, jadi butuh adverb "quickly".'},
+ {sec:'S',q:'The mixture should be stirred ___ it becomes smooth.',opts:['during','until','because of','while that'],a:1,t:'conjunction',
+  w:['"During" hanya diikuti kata benda.','','"Because of" hanya diikuti kata benda.','"While that" tidak gramatikal.'],
+  ex:'Sebelum klausa (it becomes) dibutuhkan konjungsi, dan maknanya "sampai".'},
+ {sec:'S',q:'Neither the students nor the teacher ___ aware of the schedule change.',opts:['were','have been','was','being'],a:2,t:'sva',
+  w:['Kata kerja mengikuti subjek terdekat, "the teacher" (tunggal).','"Have" adalah bentuk jamak.','','"Being" bukan kata kerja utama.'],
+  ex:'Pada neither…nor, kata kerja mengikuti subjek terdekat → "was".'},
+ {sec:'S',q:'It is essential that every applicant ___ a valid passport.',opts:['submits','submitted','will submit','submit'],a:3,t:'subjunctive',
+  w:['Subjunctive tidak memakai -s.','Bentuk lampau tidak dipakai.','"Will" tidak dipakai dalam subjunctive.',''],
+  ex:'Setelah "It is essential that…" dipakai bentuk dasar kata kerja.'},
+ {sec:'W',s:'The {children} {was playing} {quietly} in the {garden} after lunch.',a:1,t:'sva',
+  w:['"Children" adalah bentuk jamak yang benar dari child.','','"Quietly" adverb yang tepat untuk kata kerja "playing".','"Garden" kata benda yang tepat.'],
+  ex:'"Children" jamak → "were playing".'},
+ {sec:'W',s:'Penguins are {flightless} birds {that} {lives} mostly in the {Southern Hemisphere}.',a:2,t:'sva',
+  w:['"Flightless" adjective yang benar (tidak bisa terbang).','"That" tepat sebagai relative pronoun.','','Nama wilayahnya sudah benar.'],
+  ex:'"That" merujuk ke "birds" (jamak) → "live".'},
+ {sec:'W',s:'{The Wright brothers} {made} {their first} {successfully} powered flight in 1903.',a:3,t:'wordform',
+  w:['Subjek jamak yang benar.','Past tense cocok dengan tahun 1903.','"Their" merujuk ke brothers, sudah tepat.',''],
+  ex:'Yang diterangkan kata benda "flight", jadi butuh adjective "successful".'},
+ {sec:'W',s:'{Each} of the students {in the class} {have} {a laptop} for the course.',a:2,t:'sva',
+  w:['"Each of the students" sudah benar.','Frasa keterangan yang benar.','','"A laptop" tepat karena tiap siswa punya satu.'],
+  ex:'"Each of…" selalu tunggal → "has".'},
+ {sec:'W',s:'Mount Everest, {the highest} mountain in the world, {are located} {on the border} {between} Nepal and China.',a:1,t:'sva',
+  w:['Superlatif yang benar.','','"On the border" sudah tepat.','"Between… and…" tepat untuk dua negara.'],
+  ex:'Subjeknya "Mount Everest" (tunggal) → "is located". Jangan terkecoh frasa di antara koma.'},
+ {sec:'W',s:'{Since} five years, my sister {has lived} in Semarang {and} {enjoys} it very much.',a:0,t:'tense',
+  w:['','Present perfect tepat untuk keadaan yang masih berlangsung.','"And" menghubungkan dua kata kerja dengan benar.','"Enjoys" cocok dengan subjek tunggal.'],
+  ex:'Durasi memakai "for" (for five years). "Since" untuk titik waktu (since 2020).'},
+ {sec:'W',s:'All the {useful} {informations} {in} the report came {from} several sources.',a:1,t:'countable',
+  w:['Adjective yang benar.','','"In the report" preposisi yang tepat.','"Came from" pasangan yang benar.'],
+  ex:'"Information" uncountable, tidak bisa diberi -s.'},
+ {sec:'W',s:'Coffee is {one of} {the most} {popular} {drink} in the world.',a:3,t:'countable',
+  w:['"One of" sudah benar, tapi menuntut kata benda jamak sesudahnya.','Superlatif yang benar.','Adjective yang tepat.',''],
+  ex:'"One of the…" selalu diikuti kata benda jamak → "drinks".'},
+ {sec:'W',s:'{Despite of} the heavy rain, the {match} {continued} {as planned}.',a:0,t:'conjunction',
+  w:['','Kata benda yang tepat.','Past tense yang konsisten.','Frasa yang benar.'],
+  ex:'"Despite" tidak memakai "of". Yang benar "Despite the rain" atau "In spite of the rain".'},
+ {sec:'W',s:"The museum's collection {includes} paintings, {sculptures}, and {it has} ancient coins {from} Java.",a:2,t:'parallel',
+  w:['"Includes" cocok dengan subjek tunggal "collection".','Bagian dari daftar kata benda, sudah benar.','','Preposisi asal yang tepat.'],
+  ex:'Daftarnya harus paralel: "paintings, sculptures, and ancient coins".'},
+ {sec:'R',p:'borobudur',q:'What is the passage mainly about?',opts:['The religious practices of the Sailendra dynasty','The structure and history of Borobudur','The life of Thomas Stamford Raffles','Tourism in Central Java'],a:1,t:'r-main',
+  w:['Dinasti Sailendra hanya disebut sekali.','','Raffles hanya satu detail di paragraf 2.','Pariwisata hanya disebut di kalimat terakhir.'],
+  ex:'Paragraf 1 membahas struktur, paragraf 2 membahas sejarah penemuan dan pemugaran.'},
+ {sec:'R',p:'borobudur',q:'According to the passage, how many circular platforms does Borobudur have?',opts:['Six','Nine','Three','Two'],a:2,t:'r-detail',
+  w:['Enam adalah jumlah platform persegi.','Sembilan adalah jumlah seluruh platform.','','Angka ini tidak ada di bacaan.'],
+  ex:'"Six square ones at the base and three circular ones above them."'},
+ {sec:'R',p:'borobudur',q:'The word "abandoned" in paragraph 2 is closest in meaning to',opts:['left unused','rebuilt','decorated','visited'],a:0,t:'r-vocab',
+  w:['','Pemugaran baru terjadi jauh kemudian.','Hiasan dibahas di paragraf 1, bukan konteks kata ini.','Kebalikannya: monumen itu dilupakan.'],
+  ex:'Tertutup abu dan hutan, dilupakan dunia luar, berarti ditinggalkan.'},
+ {sec:'R',p:'borobudur',q:'The word "its" in "learned of its existence" (paragraph 2) refers to',opts:['Java','the jungle','the outside world','the monument'],a:3,t:'r-ref',
+  w:['Raffles sudah berada di Jawa, jadi tidak perlu "mengetahui keberadaannya".','Hutan bukan yang diselidiki.','Dunia luar justru yang tidak tahu.',''],
+  ex:'Raffles mengetahui keberadaan monumen itu, lalu mengirim insinyur.'},
+ {sec:'R',p:'borobudur',q:'It can be inferred from paragraph 1 that pilgrims walked clockwise in order to',opts:['avoid the volcanic ash','reach the top faster','view the carved stories in sequence','follow the instructions of UNESCO'],a:2,t:'r-infer',
+  w:['Abu vulkanik dibahas di paragraf 2 dan terjadi berabad-abad kemudian.','Kecepatan tidak disebut.','','UNESCO baru terlibat pada abad ke-20.'],
+  ex:'"So that the carved stories unfolded in order" berarti agar relief terbaca berurutan.'},
+ {sec:'R',p:'mangrove',q:'What does the second paragraph mainly discuss?',opts:['Where mangroves grow','The benefits of mangroves','Why mangroves are cut down','How to plant mangroves'],a:1,t:'r-main',
+  w:['Lokasi dibahas di paragraf 1.','','Penebangan dibahas di paragraf 3.','Penanaman hanya disinggung di paragraf 3.'],
+  ex:'Kalimat topik paragraf 2: "These forests provide important benefits…"'},
+ {sec:'R',p:'mangrove',q:'According to the passage, some mangrove roots rise above the mud in order to',opts:['take in air','catch fish','store salt','attract crabs'],a:0,t:'r-detail',
+  w:['','Ikan disebut dalam konteks lain (tempat berkembang biak).','Tidak ada penyimpanan garam.','Kepiting disebut sebagai penghuni, bukan alasan akar muncul.'],
+  ex:'"Special roots that rise above the mud to take in air during high tide."'},
+ {sec:'R',p:'mangrove',q:'The word "dense" in paragraph 2 is closest in meaning to',opts:['thin','ancient','thick','wet'],a:2,t:'r-vocab',
+  w:['Kebalikannya. Akar tipis tidak bisa menahan ombak.','Usia akar tidak dibahas.','','Basah memang benar, tapi bukan makna "dense".'],
+  ex:'Akar yang rapat dan lebat mampu menahan sedimen dan ombak.'},
+ {sec:'R',p:'mangrove',q:'What is mentioned as a main reason mangroves in Indonesia have been cleared?',opts:['Rising sea levels','Building fish and shrimp ponds','Producing timber for export','Volcanic eruptions'],a:1,t:'r-detail',
+  w:['Tidak disebut.','','Ekspor kayu tidak disebut, meski terdengar masuk akal.','Tidak disebut.'],
+  ex:'"Mainly to make room for fish and shrimp ponds."'},
+ {sec:'R',p:'mangrove',q:'What can be inferred about replanted mangrove forests?',opts:['They grow faster than original forests.','They are not allowed in Indonesia.','They provide full benefits immediately.','They may not work as well as original forests at first.'],a:3,t:'r-infer',
+  w:['Bacaan menyiratkan sebaliknya.','Justru banyak program penanaman berjalan.','Bertentangan dengan "may take many years".',''],
+  ex:'"Restored forests may take many years to provide the full benefits."'}
+]},
+{name:'Paket 2',items:[
+ {sec:'L',audio:[{who:'M',t:"Could you lend me your notes from yesterday's lecture?"},{who:'W',t:'I would if I had taken any. I was absent too.'},{who:'N',t:'What does the woman mean?'}],
+  q:'What does the woman mean?',opts:['She will lend him her notes later.','She did not attend the lecture either.','She took very detailed notes.','She wants to borrow his notes.'],a:1,t:'l-condition',
+  w:['"I would if I had…" berarti kenyataannya ia tidak punya catatan.','','Ia sama sekali tidak mencatat.','Ia tidak meminta pinjam.'],
+  ex:'"I was absent too" berarti ia juga tidak masuk kuliah.'},
+ {sec:'L',audio:[{who:'W',t:"I'm exhausted. I've been studying for six hours straight."},{who:'M',t:"Why don't we grab a coffee and take a break?"},{who:'N',t:'What does the man suggest?'}],
+  q:'What does the man suggest?',opts:['Studying for six more hours','Going home to sleep','Taking a rest with a drink','Skipping the exam'],a:2,t:'l-suggest',
+  w:['"Six hours" jebakan dari kalimat wanita.','Pulang dan tidur tidak disebut.','','Ujian tidak dibahas.'],
+  ex:'"Grab a coffee and take a break" berarti istirahat sambil minum.'},
+ {sec:'L',audio:[{who:'M',t:'I heard the concert was canceled.'},{who:'W',t:"Not exactly. It's been moved to next Saturday."},{who:'N',t:'What does the woman mean?'}],
+  q:'What does the woman mean?',opts:['The concert has been postponed.','The concert was canceled.','She did not hear about the concert.','The concert is tonight.'],a:0,t:'l-correction',
+  w:['','"Not exactly" justru membantah kabar pembatalan.','Ia tahu jadwal barunya.','Konser dipindah ke Sabtu depan.'],
+  ex:'"Moved to next Saturday" berarti diundur, bukan dibatalkan.'},
+ {sec:'L',audio:[{who:'W',t:'I really enjoyed the novel you recommended.'},{who:'M',t:'So did I. I read it twice.'},{who:'N',t:'What does the man mean?'}],
+  q:'What does the man mean?',opts:['He did not finish the book.','He also liked the novel.','He wants to recommend another book.','He has not read it.'],a:1,t:'l-agree',
+  w:['Ia malah membacanya dua kali.','','Buku lain tidak disebut.','Ia sudah membacanya dua kali.'],
+  ex:'"So did I" berarti ia juga menikmatinya.'},
+ {sec:'L',audio:[{who:'M',t:'Is it going to rain this afternoon?'},{who:'W',t:"I wouldn't go out without an umbrella."},{who:'N',t:'What does the woman imply?'}],
+  q:'What does the woman imply?',opts:['She does not own an umbrella.','The weather will be sunny.','She is staying home all day.','It will probably rain.'],a:3,t:'l-implied',
+  w:['Ia tidak membahas punya payung atau tidak.','Saran membawa payung menandakan sebaliknya.','Ia tidak bilang akan di rumah.',''],
+  ex:'Menyarankan membawa payung berarti kemungkinan besar akan hujan.'},
+ {sec:'L',audio:[{who:'W',t:"Professor Hayes's exam was much easier than I expected."},{who:'M',t:'You can say that again.'},{who:'N',t:'What does the man mean?'}],
+  q:'What does the man mean?',opts:['He wants her to repeat what she said.','He agrees with her.','He did not take the exam.','He found the exam difficult.'],a:1,t:'l-idiom',
+  w:['Arti harfiah, padahal ini idiom.','','Ia jelas ikut ujian.','Kebalikan dari maksudnya.'],
+  ex:'"You can say that again" adalah idiom yang berarti sangat setuju.'},
+ {sec:'L',audio:[{who:'M',t:"Have you registered for next semester's classes?"},{who:'W',t:'I was going to, but the system was down all morning.'},{who:'N',t:'What does the woman mean?'}],
+  q:'What does the woman mean?',opts:['She has already registered.','She does not plan to register.','She could not register because of a technical problem.','She registered in the afternoon.'],a:2,t:'l-but',
+  w:['"I was going to, but…" berarti belum jadi.','Ia berniat mendaftar.','','Waktu siang tidak disebut.'],
+  ex:'"The system was down" berarti sistem sedang gangguan.'},
+ {sec:'L',audio:[{who:'W',t:'Do you know where the Student Affairs office is?'},{who:'M',t:"It's on the second floor, right next to the elevator."},{who:'N',t:'What does the man say about the office?'}],
+  q:'What does the man say about the office?',opts:['It has moved to another building.','It is closed today.','It is on the first floor.','It is beside the elevator on the second floor.'],a:3,t:'l-detail',
+  w:['Tidak ada perpindahan gedung.','Jam buka tidak dibahas.','Ia menyebut lantai dua.',''],
+  ex:'"Second floor, right next to the elevator."'},
+ {sec:'L',talk:true,audio:[...TALK2,{who:'N',t:'What is the main topic of the lecture?'}],
+  q:'What is the main topic of the lecture?',opts:['How algae are used as food','Why coral reefs lose their color','Where coral reefs are found','How to protect fish populations'],a:1,t:'l-main',
+  w:['Alga dibahas sebagai penyebab warna, bukan topik utama.','','Lokasi terumbu tidak dibahas.','Ikan tidak disebut.'],
+  ex:'Dosen membuka dengan "coral reefs and the problem of coral bleaching".'},
+ {sec:'L',talk:true,audio:[...TALK2,{who:'N',t:'According to the speaker, what causes corals to push out the algae?'}],
+  q:'According to the speaker, what causes corals to push out the algae?',opts:['Water that stays too warm','Too much sunlight at night','Fish that eat the algae','Pollution from ships'],a:0,t:'l-detail',
+  w:['','Tidak ada sinar matahari di malam hari dan tidak disebut.','Tidak disebut.','Polusi tidak disebut.'],
+  ex:'"When ocean water becomes too warm for a long period, corals push the algae out."'},
+ {sec:'S',q:'___ is one of the most important skills for university students.',opts:['Manage time','Managing time','To managing time','Managed time'],a:1,t:'gerund-inf',
+  w:['Bentuk dasar verb tidak bisa menjadi subjek.','','"To" + V-ing tidak gramatikal di sini.','"Managed" berarti sesuatu yang dikelola.'],
+  ex:'Gerund "Managing time" berfungsi sebagai subjek kalimat.'},
+ {sec:'S',q:'The Amazon River carries more water ___ any other river in the world.',opts:['than','as','that','then'],a:0,t:'comparative',
+  w:['','"As" dipakai pada pola "as … as".','"That" bukan pembanding.','"Then" berarti kemudian, sering tertukar dengan "than".'],
+  ex:'"More … than" adalah pola comparative.'},
+ {sec:'S',q:'Only after the results were announced ___ how well they had done.',opts:['the students realized','realized the students','did the students realize','the students did realize'],a:2,t:'inversion',
+  w:['Tanpa inversi, padahal kalimat dibuka "Only after".','Verb utama tidak bisa ditaruh sebelum subjek tanpa auxiliary.','','Auxiliary harus di depan subjek.'],
+  ex:'"Only after…" menuntut inversi: did + subjek + verb dasar.'},
+ {sec:'S',q:'Lake Toba, ___ in North Sumatra, is the largest volcanic lake in the world.',opts:['locates','which located','is located','located'],a:3,t:'participle',
+  w:['Danau tidak "menempatkan" (aktif).','"Which" butuh "is": which is located.','Kalimat jadi punya dua verb utama.',''],
+  ex:'Reduced relative clause: "(which is) located" → "located".'},
+ {sec:'S',q:'The professor asked the students ___ their essays by Friday.',opts:['submit','to submit','submitting','submitted'],a:1,t:'gerund-inf',
+  w:['"Ask + objek" diikuti to-infinitive.','','Gerund tidak dipakai setelah ask + objek.','Bentuk lampau tidak cocok.'],
+  ex:'Pola "ask someone to do something".'},
+ {sec:'S',q:'___ the heavy traffic, we arrived at the airport on time.',opts:['Although','Because','In spite of','Even though'],a:2,t:'conjunction',
+  w:['"Although" butuh klausa (S + V), bukan kata benda.','Maknanya salah dan juga butuh klausa.','','"Even though" butuh klausa.'],
+  ex:'"In spite of + noun" untuk makna pertentangan.'},
+ {sec:'S',q:'Komodo dragons are ___ lizards on Earth.',opts:['the largest','largest','the larger','more large'],a:0,t:'comparative',
+  w:['','Superlatif butuh "the".','Comparative dipakai untuk dua hal, bukan "on Earth".','Bentuk yang benar "larger", bukan "more large".'],
+  ex:'Perbandingan dengan semua ("on Earth") memakai superlatif "the largest".'},
+ {sec:'S',q:'If I ___ more time, I would join the English club.',opts:['have','will have','had','having'],a:2,t:'conditional',
+  w:['Present tense dipakai pada type 1, bukan dengan "would".','"Will" tidak dipakai di klausa if.','','"Having" bukan kata kerja lengkap.'],
+  ex:'Conditional type 2: If + past, would + V.'},
+ {sec:'S',q:'The book ___ I borrowed from the library is overdue.',opts:['who','which','whom','what'],a:1,t:'relative',
+  w:['"Who" untuk orang.','','"Whom" untuk orang sebagai objek.','"What" tidak dipakai setelah kata benda.'],
+  ex:'"Which" untuk benda (the book).'},
+ {sec:'S',q:'Rarely ___ such a beautiful sunset.',opts:['I have seen','seen I have','I saw','have I seen'],a:3,t:'inversion',
+  w:['Tanpa inversi.','Urutan acak, tidak gramatikal.','Tanpa inversi.',''],
+  ex:'"Rarely" di awal kalimat → auxiliary + subjek: "have I seen".'},
+ {sec:'W',s:'My brother {and} his friends {goes} {to} the gym {every} morning.',a:1,t:'sva',
+  w:['"And" membuat subjek menjadi jamak.','','Preposisi arah yang benar.','"Every morning" sudah benar.'],
+  ex:'Subjek gabungan "my brother and his friends" jamak → "go".'},
+ {sec:'W',s:'Students are often {interesting} {in} {learning} about {other} cultures.',a:0,t:'wordform',
+  w:['','"Interested in" adalah pasangan yang benar.','Setelah preposisi dipakai gerund.','"Other" + noun jamak sudah tepat.'],
+  ex:'Untuk perasaan orang pakai "interested", bukan "interesting".'},
+ {sec:'W',s:'The new office {has} {modern} {furnitures} {and} large windows.',a:2,t:'countable',
+  w:['"Has" cocok dengan "office" (tunggal).','Adjective yang benar.','','"And" menghubungkan dua kata benda.'],
+  ex:'"Furniture" uncountable, tidak memakai -s.'},
+ {sec:'W',s:'{Neither} Rina {nor} her sister {have} visited Bali {before}.',a:2,t:'sva',
+  w:['"Neither" berpasangan dengan "nor", sudah benar.','Pasangan yang tepat.','','"Before" tepat untuk present perfect.'],
+  ex:'Kata kerja mengikuti subjek terdekat, "her sister" (tunggal) → "has".'},
+ {sec:'W',s:'The scientist {who discovered} the vaccine {were} {awarded} {a prize}.',a:1,t:'sva',
+  w:['Klausa relatif yang lengkap.','','Past participle untuk pasif sudah benar.','Kata benda yang tepat.'],
+  ex:'Subjek intinya "the scientist" (tunggal) → "was awarded".'},
+ {sec:'W',s:'{Although} it was {raining} {heavily}, {but} we went hiking.',a:3,t:'conjunction',
+  w:['"Although" sudah benar. Masalahnya konjungsi kedua.','Past continuous yang tepat.','Adverb yang tepat.',''],
+  ex:'Although dan but tidak dipakai bersamaan. Hapus "but".'},
+ {sec:'W',s:'The {teacher} explained the lesson {clear} {so that} everyone {could} understand.',a:1,t:'wordform',
+  w:['Subjek yang benar.','','"So that" tepat untuk tujuan.','"Could" cocok dengan past tense.'],
+  ex:'Kata kerja "explained" diterangkan adverb → "clearly".'},
+ {sec:'W',s:'{All} students {must} {to wear} their ID cards {on campus}.',a:2,t:'modal',
+  w:['Determiner yang benar.','Modal yang tepat untuk kewajiban.','','Keterangan tempat yang benar.'],
+  ex:'Setelah "must" langsung verb dasar: "must wear".'},
+ {sec:'W',s:'Jakarta is {more larger} {than} Surabaya {in} {terms of} population.',a:0,t:'comparative',
+  w:['','"Than" pasangan comparative yang benar.','Preposisi yang tepat.','Frasa "in terms of" sudah benar.'],
+  ex:'"Larger" sudah comparative, jadi tidak ditambah "more".'},
+ {sec:'W',s:'She enjoys {reading}, {cooking}, and {to swim} {in} her free time.',a:2,t:'parallel',
+  w:['Gerund setelah "enjoys", benar.','Gerund yang paralel, benar.','','Preposisi yang tepat.'],
+  ex:'Agar paralel dan sesuai "enjoys", pakai gerund "swimming".'},
+ {sec:'R',p:'batik',q:'What is the main purpose of the passage?',opts:['To compare batik with other textiles','To explain how batik is made and what it represents','To describe the history of Pekalongan','To argue that stamped batik is better'],a:1,t:'r-purpose',
+  w:['Tekstil lain tidak dibahas.','','Pekalongan hanya contoh di paragraf 2.','Penulis tidak berpendapat cap lebih baik, hanya lebih cepat.'],
+  ex:'Paragraf 1 menjelaskan proses, paragraf 2 menjelaskan makna dan pengakuan batik.'},
+ {sec:'R',p:'batik',q:'According to paragraph 1, what is the function of the wax?',opts:['It makes the colors brighter.','It makes the cloth stronger.','It prevents dye from reaching certain areas.','It helps the cloth dry faster.'],a:2,t:'r-detail',
+  w:['Warna cerah dibahas untuk batik pesisir, bukan fungsi lilin.','Tidak disebut.','','Tidak disebut.'],
+  ex:'"Applying wax to the parts that should not absorb dye."'},
+ {sec:'R',p:'batik',q:'The word "revealing" in paragraph 1 is closest in meaning to',opts:['hiding','showing','repairing','copying'],a:1,t:'r-vocab',
+  w:['Kebalikannya. Lilin dilepas sehingga pola terlihat.','','Tidak ada yang diperbaiki.','Tidak ada yang disalin.'],
+  ex:'Setelah lilin dilepas, pola di bawahnya terlihat.'},
+ {sec:'R',p:'batik',q:'Why does the author mention Chinese, Arab, and European traders?',opts:['To explain the style of coastal batik','To show that batik was invented abroad','To describe rules in the royal courts','To explain UNESCO\'s decision'],a:0,t:'r-purpose',
+  w:['','Bacaan tidak menyebut batik ditemukan di luar negeri.','Keraton dibahas terpisah.','Tidak ada hubungannya dengan UNESCO.'],
+  ex:'Para pedagang disebut untuk menjelaskan pengaruh pada batik pesisir.'},
+ {sec:'R',p:'batik',q:'Which of the following is NOT mentioned in the passage?',opts:['A tool called a canting','National Batik Day','The price of hand-drawn batik','Patterns reserved for nobility'],a:2,t:'r-notmentioned',
+  w:['Disebut di paragraf 1.','Disebut di akhir paragraf 2.','','Disebut di paragraf 2 (parang).'],
+  ex:'Harga batik tulis tidak pernah disebut. Yang disebut hanya lama pembuatannya.'},
+ {sec:'R',p:'sleep',q:'What is the passage mainly about?',opts:['The causes of sleeping disorders','How sleep helps the brain store memories','Why students fail exams','The structure of the hippocampus'],a:1,t:'r-main',
+  w:['Gangguan tidur tidak dibahas.','','Kegagalan ujian tidak dibahas.','Hippocampus hanya satu detail.'],
+  ex:'Seluruh bacaan membahas hubungan tidur dengan penyimpanan memori.'},
+ {sec:'R',p:'sleep',q:'According to the passage, the hippocampus',opts:['stores information only for a short time','is active only when we are awake','produces melatonin','controls attention'],a:0,t:'r-detail',
+  w:['','Bacaan menyebut ia bekerja saat tidur.','Melatonin disebut sebagai hormon, bukan produk hippocampus.','Tidak disebut.'],
+  ex:'"A region that stores information temporarily."'},
+ {sec:'R',p:'sleep',q:'The word "reduces" in paragraph 2 is closest in meaning to',opts:['increases','measures','lowers','protects'],a:2,t:'r-vocab',
+  w:['Kebalikannya.','Tidak cocok dengan konteks.','','Tidak cocok dengan konteks.'],
+  ex:'Kurang tidur menurunkan perhatian.'},
+ {sec:'R',p:'sleep',q:'Why does the author mention an experiment with a list of words?',opts:['To support the idea that sleep improves memory','To show how difficult vocabulary tests are','To compare adults and children','To explain how melatonin works'],a:0,t:'r-purpose',
+  w:['','Tingkat kesulitan tes tidak dibahas.','Anak-anak tidak disebut.','Melatonin dibahas di kalimat lain.'],
+  ex:'Eksperimen itu bukti bahwa orang yang tidur setelah belajar lebih banyak mengingat.'},
+ {sec:'R',p:'sleep',q:'It can be inferred that a student who studies all night before an exam',opts:['will remember more than other students','may perform worse than if he had slept','will need less sleep the next week','does not need to review again'],a:1,t:'r-infer',
+  w:['Bacaan menyiratkan sebaliknya.','','Tidak ada dasar di bacaan.','Tidak ada dasar di bacaan.'],
+  ex:'Tidur membantu memori, dan kurang tidur menurunkan perhatian.'}
+]},
+{name:'Paket 3',items:[
+ {sec:'L',audio:[{who:'W',t:'Do you mind if I open the window?'},{who:'M',t:"Not at all. It's quite warm in here."},{who:'N',t:'What does the man mean?'}],
+  q:'What does the man mean?',opts:['He wants the window closed.','She can open the window.','He is feeling cold.','He minds very much.'],a:1,t:'l-idiom',
+  w:['Kebalikan dari maksudnya.','','Ia bilang ruangan hangat.','"Not at all" justru berarti sama sekali tidak keberatan.'],
+  ex:'"Do you mind…?" dijawab "Not at all" berarti boleh.'},
+ {sec:'L',audio:[{who:'M',t:"I can't find my calculator anywhere."},{who:'W',t:'Did you check your backpack? You had it there this morning.'},{who:'N',t:'What does the woman suggest?'}],
+  q:'What does the woman suggest?',opts:['He should buy a new one.','He can borrow hers.','He should look in his bag.','He should ask the teacher.'],a:2,t:'l-suggest',
+  w:['Tidak disebut.','Ia tidak menawarkan miliknya.','','Guru tidak disebut.'],
+  ex:'"Did you check your backpack?" adalah saran untuk mencari di tas.'},
+ {sec:'L',audio:[{who:'W',t:'Are you taking the bus to the conference?'},{who:'M',t:"I'd rather drive. The bus takes forever."},{who:'N',t:'What does the man mean?'}],
+  q:'What does the man mean?',opts:['He prefers to drive.','He will take the bus.','The conference is canceled.','He does not have a car.'],a:0,t:'l-implied',
+  w:['','"I\'d rather drive" berarti ia tidak memilih bus.','Tidak disebut.','Ia ingin menyetir, jadi kemungkinan punya kendaraan.'],
+  ex:'"I\'d rather…" berarti lebih memilih.'},
+ {sec:'L',audio:[{who:'W',t:"Wasn't the lecture fascinating?"},{who:'M',t:'I could hardly keep my eyes open.'},{who:'N',t:'What does the man mean?'}],
+  q:'What does the man mean?',opts:['The lecture was interesting.','He found the lecture boring.','His eyes were hurting.','He arrived late.'],a:1,t:'l-idiom',
+  w:['Kebalikan dari maksudnya.','','Arti harfiah, padahal ini idiom.','Tidak disebut.'],
+  ex:'"Could hardly keep my eyes open" berarti sangat mengantuk karena bosan.'},
+ {sec:'L',audio:[{who:'W',t:"I wish I hadn't spent all my money on that jacket."},{who:'M',t:'Well, at least it keeps you warm.'},{who:'N',t:'What does the woman mean?'}],
+  q:'What does the woman mean?',opts:['She is happy with her purchase.','She lost her jacket.','She wants to buy another jacket.','She regrets buying the jacket.'],a:3,t:'l-condition',
+  w:['"I wish I hadn\'t" menunjukkan penyesalan.','Tidak disebut.','Uangnya justru habis.',''],
+  ex:'"I wish I hadn\'t…" berarti menyesal sudah melakukannya.'},
+ {sec:'L',audio:[{who:'M',t:'Is the cafeteria still serving lunch?'},{who:'W',t:"You're just in time. They close in ten minutes."},{who:'N',t:'What does the woman mean?'}],
+  q:'What does the woman mean?',opts:['The man can still get lunch.','The cafeteria is closed.','Lunch starts in ten minutes.','The man is late for class.'],a:0,t:'l-detail',
+  w:['','Masih buka sepuluh menit lagi.','Sepuluh menit lagi tutup, bukan mulai.','Kelas tidak disebut.'],
+  ex:'"You\'re just in time" berarti masih sempat.'},
+ {sec:'L',audio:[{who:'W',t:'Should I call Dr. Wilson about my grade?'},{who:'M',t:"I'd send her an email instead. She's rarely in her office."},{who:'N',t:'What does the man suggest?'}],
+  q:'What does the man suggest?',opts:['Visiting her office','Waiting until next week','Calling her right away','Contacting her by email'],a:3,t:'l-suggest',
+  w:['Ia justru jarang di kantor.','Tidak disebut.','"Instead" menolak ide menelepon.',''],
+  ex:'"I\'d send her an email instead" adalah saran memakai email.'},
+ {sec:'L',audio:[{who:'M',t:'Did Sarah get the scholarship?'},{who:'W',t:'Yes, and hardly anyone deserved it more.'},{who:'N',t:'What does the woman mean?'}],
+  q:'What does the woman mean?',opts:['Sarah did not apply.','Sarah deserved the scholarship.','Many people deserved it more than Sarah.','The scholarship was canceled.'],a:1,t:'l-negative',
+  w:['Ia mendapatkannya, jadi pasti mendaftar.','','"Hardly" berarti hampir tidak ada, jadi kebalikannya.','Tidak disebut.'],
+  ex:'"Hardly anyone deserved it more" berarti Sarah sangat layak.'},
+ {sec:'L',talk:true,audio:[...TALK3,{who:'N',t:'What is the talk mainly about?'}],
+  q:'What is the talk mainly about?',opts:["Wallace's journey to Australia",'How ice ages created new islands','A boundary between two groups of animals','The wildlife of Bali'],a:2,t:'l-main',
+  w:['Wallace berkeliling Nusantara, bukan Australia.','Zaman es hanya penjelasan pendukung.','','Bali hanya salah satu contoh.'],
+  ex:'Inti ceramah adalah Garis Wallace yang memisahkan fauna Asia dan Australia.'},
+ {sec:'L',talk:true,audio:[...TALK3,{who:'N',t:'Why could most land animals not cross the Wallace Line?'}],
+  q:'Why could most land animals not cross the Wallace Line?',opts:['The islands were too far from Asia.','A deep channel of water never dried up.','The climate on Lombok was too cold.','Humans hunted them.'],a:1,t:'l-detail',
+  w:['Bali sangat dekat dengan Lombok.','','Iklim tidak disebut.','Manusia tidak disebut.'],
+  ex:'"This channel never dried up, so most land animals could not cross it."'},
+ {sec:'S',q:'The first modern Olympic Games ___ in Athens in 1896.',opts:['held','were held','holding','have held'],a:1,t:'passive',
+  w:['Aktif, seolah Olimpiade yang mengadakan.','','"Holding" bukan kata kerja utama.','Present perfect tidak cocok dengan tahun 1896, dan maknanya aktif.'],
+  ex:'Olimpiade diadakan (pasif), dan waktunya lampau → "were held".'},
+ {sec:'S',q:'___ she was tired, she finished her assignment.',opts:['Despite','Because of','Although','However'],a:2,t:'conjunction',
+  w:['"Despite" diikuti kata benda, bukan klausa.','Maknanya salah, dan juga diikuti kata benda.','','"However" tidak bisa menyambung dua klausa dengan cara ini.'],
+  ex:'"Although + klausa" untuk makna pertentangan.'},
+ {sec:'S',q:'Ki Hajar Dewantara, ___, is regarded as the father of Indonesian education.',opts:['he founded Taman Siswa','who founded Taman Siswa','founded Taman Siswa he','was the founder of Taman Siswa'],a:1,t:'relative',
+  w:['Membuat dua klausa tanpa konjungsi.','','Urutan tidak gramatikal.','Kata kerja tanpa subjek di antara koma.'],
+  ex:'Klausa relatif "who founded Taman Siswa" menjelaskan subjek.'},
+ {sec:'S',q:'Seldom ___ snow in Jakarta.',opts:['it does','it is','does it','it'],a:2,t:'inversion',
+  w:['Tanpa inversi.','Tanpa inversi, dan "is snow" salah.','','Tidak ada auxiliary.'],
+  ex:'"Seldom" di awal kalimat → "does it snow".'},
+ {sec:'S',q:'The students are looking forward ___ the field trip to Dieng.',opts:['to joining','to join','joining','join'],a:0,t:'gerund-inf',
+  w:['','"To" di sini preposisi, jadi diikuti V-ing.','Kurang "to".','Kurang "to", dan butuh V-ing.'],
+  ex:'"Look forward to + V-ing".'},
+ {sec:'S',q:'Neither of the two answers ___ correct.',opts:['are','were','is','be'],a:2,t:'sva',
+  w:['"Neither of" tunggal.','"Neither of" tunggal.','','"Be" tidak dipakai sebagai kata kerja utama.'],
+  ex:'"Neither of + noun jamak" tetap memakai verb tunggal.'},
+ {sec:'S',q:'By the time we arrived at the cinema, the film ___.',opts:['has already started','had already started','already starting','already starts'],a:1,t:'tense',
+  w:['Present perfect tidak cocok dengan konteks lampau.','','Tidak ada auxiliary.','Present tense tidak cocok.'],
+  ex:'Kejadian sebelum kejadian lampau lain memakai past perfect.'},
+ {sec:'S',q:'The bridge ___ across the river last year is now open to traffic.',opts:['building','was built','built','it was built'],a:2,t:'participle',
+  w:['Bermakna aktif, seolah jembatan yang membangun.','Kalimat jadi punya dua verb utama.','','Membuat klausa ganda.'],
+  ex:'Reduced relative clause pasif: "(which was) built" → "built".'},
+ {sec:'S',q:'My laptop needs ___ before the exam.',opts:['repair','to repairing','repaired','to be repaired'],a:3,t:'passive',
+  w:['Kurang tepat secara struktur setelah "needs".','Tidak gramatikal.','Kurang "to be".',''],
+  ex:'Laptop diperbaiki (pasif) → "needs to be repaired".'},
+ {sec:'S',q:'Not only ___ English fluently, but she also writes it beautifully.',opts:['she speaks','does she speak','she does speak','speaks she'],a:1,t:'inversion',
+  w:['Tanpa inversi.','','Auxiliary harus di depan subjek.','Verb utama tidak dibalik seperti ini.'],
+  ex:'"Not only" di awal kalimat → "does she speak".'},
+ {sec:'W',s:'The {news} about the election {were} {broadcast} {on} every channel.',a:1,t:'countable',
+  w:['"News" memang berakhiran -s tapi tunggal.','','"Broadcast" bentuk V3-nya sama, sudah benar.','"On every channel" sudah benar.'],
+  ex:'"News" uncountable dan tunggal → "was broadcast".'},
+ {sec:'W',s:'My grandmother {has} {never} {flew} {in} an airplane.',a:2,t:'tense',
+  w:['"Has" cocok dengan subjek tunggal.','Posisi "never" sudah tepat.','','Preposisi yang benar.'],
+  ex:'Present perfect butuh V3: fly–flew–flown → "has never flown".'},
+ {sec:'W',s:'The children {were} {excited} {about} {open} their presents.',a:3,t:'gerund-inf',
+  w:['Verb jamak cocok dengan "children".','"Excited" tepat untuk perasaan orang.','"Excited about" pasangan yang benar.',''],
+  ex:'Setelah preposisi "about" dipakai gerund → "opening".'},
+ {sec:'W',s:'{Because of} the road {was} {flooded}, the bus {arrived} late.',a:0,t:'conjunction',
+  w:['','"Was" cocok dengan "the road".','Bentuk yang tepat.','Past tense yang konsisten.'],
+  ex:'Sebelum klausa (the road was flooded) dipakai "because", bukan "because of".'},
+ {sec:'W',s:'She has worked {as} {a} engineer {for} {ten} years.',a:1,t:'article',
+  w:['"Worked as" untuk profesi, benar.','','"For" tepat untuk durasi.','Angka yang benar.'],
+  ex:'"Engineer" diawali bunyi vokal → "an engineer".'},
+ {sec:'W',s:'{Between} you and {I}, the {test} was {too} easy.',a:1,t:'pronoun',
+  w:['Preposisi yang benar.','','Kata benda yang tepat.','"Too easy" sudah benar.'],
+  ex:'Setelah preposisi "between" dipakai object pronoun → "me".'},
+ {sec:'W',s:'The {number} of students {who} use public transport {have} {increased}.',a:2,t:'sva',
+  w:['"The number of" sudah benar.','"Who" tepat untuk orang.','','V3 yang tepat.'],
+  ex:'"The number of…" tunggal → "has increased". Bandingkan: "A number of students have…".'},
+ {sec:'W',s:'The {researchers} {carefully} analyzed {the data} and {publishing} the results.',a:3,t:'parallel',
+  w:['Subjek jamak yang benar.','Adverb yang tepat.','Objek yang benar.',''],
+  ex:'Harus paralel dengan "analyzed" → "published".'},
+ {sec:'W',s:'{Most of} the {equipments} in the lab {is} {new}.',a:1,t:'countable',
+  w:['"Most of the" sudah benar.','','"Is" justru benar karena equipment uncountable.','Adjective yang tepat.'],
+  ex:'"Equipment" uncountable, tidak memakai -s.'},
+ {sec:'W',s:'If it {will rain} tomorrow, the match {will} {be} {postponed}.',a:0,t:'conditional',
+  w:['','"Will" benar di klausa utama.','"Be" bentuk dasar setelah will.','Bentuk pasif yang tepat.'],
+  ex:'Pada conditional type 1, klausa "if" memakai present: "If it rains".'},
+ {sec:'R',p:'rafflesia',q:'What is the passage mainly about?',opts:['The rainforests of Sumatra','The unusual features of a giant flower','How flies find food','Tropical vines'],a:1,t:'r-main',
+  w:['Hutan hujan hanya tempat tumbuhnya.','','Lalat hanya detail penyerbukan.','Tanaman merambat hanya inang.'],
+  ex:'Kedua paragraf membahas keunikan Rafflesia.'},
+ {sec:'R',p:'rafflesia',q:'According to paragraph 1, how does Rafflesia get its nutrients?',opts:['Through its large leaves','From the soil with deep roots','From the vine it lives in','From the flies it attracts'],a:2,t:'r-detail',
+  w:['Rafflesia tidak punya daun.','Rafflesia tidak punya akar sejati.','','Lalat membantu penyerbukan, bukan memberi makan.'],
+  ex:'"Taking all of its water and nutrients from its host."'},
+ {sec:'R',p:'rafflesia',q:'The word "host" in paragraph 1 refers to',opts:['the vine','the flower','the rainforest','the parasite'],a:0,t:'r-ref',
+  w:['','Bunga itulah parasitnya.','Terlalu umum.','Parasit adalah Rafflesia itu sendiri.'],
+  ex:'Rafflesia hidup di dalam tanaman merambat yang menjadi inangnya.'},
+ {sec:'R',p:'rafflesia',q:'Why does the flower produce a smell like rotting meat?',opts:['To scare away animals','To attract insects that spread pollen','To protect its host','To grow faster'],a:1,t:'r-detail',
+  w:['Bau itu justru menarik, bukan mengusir.','','Tidak disebut.','Tidak disebut.'],
+  ex:'"This odor attracts flies, which carry pollen."'},
+ {sec:'R',p:'rafflesia',q:'The word "collapses" in paragraph 2 is closest in meaning to',opts:['grows','opens','falls apart','travels'],a:2,t:'r-vocab',
+  w:['Kebalikannya.','Bunga sudah mekar sebelumnya.','','Tidak cocok dengan konteks.'],
+  ex:'Setelah seminggu, bunga menghitam lalu hancur.'},
+ {sec:'R',p:'krakatau',q:'What caused most of the deaths in the 1883 disaster?',opts:['Giant waves','Falling ash','Poisonous gases','The cold weather'],a:0,t:'r-detail',
+  w:['','Bacaan menyebut korban akibat gelombang, bukan letusan langsung.','Tidak disebut sebagai penyebab kematian.','Penurunan suhu terjadi setelahnya dan hanya sedikit.'],
+  ex:'"Most of them because of the waves rather than the eruption itself."'},
+ {sec:'R',p:'krakatau',q:'The word "tremendous" in paragraph 1 is closest in meaning to',opts:['slight','enormous','sudden','strange'],a:1,t:'r-vocab',
+  w:['Kebalikannya.','','Letusannya memang tiba-tiba, tapi itu bukan makna kata ini.','Tidak cocok.'],
+  ex:'Suaranya terdengar ribuan kilometer, berarti kekuatannya sangat besar.'},
+ {sec:'R',p:'krakatau',q:'According to paragraph 2, why did global temperatures drop?',opts:['The ocean became colder.','The tsunamis cooled the land.','Volcanic smoke caused heavy rain.','Ash in the atmosphere blocked some sunlight.'],a:3,t:'r-detail',
+  w:['Tidak disebut.','Tidak disebut.','Hujan tidak disebut.',''],
+  ex:'"Blocked part of the sunlight. As a result, average global temperatures dropped."'},
+ {sec:'R',p:'krakatau',q:'It can be inferred that the red sunsets seen in Europe were',opts:['caused by particles from the eruption','a sign of another eruption','seen only in Indonesia','unrelated to Krakatau'],a:0,t:'r-infer',
+  w:['','Tidak ada letusan lain yang disebut.','Justru terlihat di Eropa.','Disebut sebagai bagian dari dampak global.'],
+  ex:'Matahari terbenam merah disebut setelah penjelasan abu di atmosfer.'},
+ {sec:'R',p:'krakatau',q:'Which of the following is NOT mentioned about Anak Krakatau?',opts:['When it appeared','What its name means','How tall it is','That it is still active'],a:2,t:'r-notmentioned',
+  w:['Disebut: 1927.','Disebut: "Child of Krakatau".','','Disebut: "remains active today".'],
+  ex:'Tinggi Anak Krakatau tidak pernah disebut.'}
+]},
+{name:'Paket 4',items:[
+ {sec:'L',audio:[{who:'W',t:"I'm going to the bookstore. Do you need anything?"},{who:'M',t:"Now that you mention it, I'm almost out of printer paper."},{who:'N',t:'What does the man imply?'}],
+  q:'What does the man imply?',opts:['He does not need anything.','He wants her to buy some paper for him.','He is going to the bookstore too.','He has plenty of printer paper.'],a:1,t:'l-implied',
+  w:['Ia justru menyebut sesuatu yang ia butuhkan.','','Ia tidak bilang akan ikut ke toko buku.','"Almost out of" berarti hampir habis, kebalikan dari banyak.'],
+  ex:'"Now that you mention it, I\'m almost out of…" adalah cara halus meminta dibelikan kertas.'},
+ {sec:'L',audio:[{who:'M',t:'How did your presentation go?'},{who:'W',t:"Couldn't have gone better."},{who:'N',t:'What does the woman mean?'}],
+  q:'What does the woman mean?',opts:['The presentation went very well.','She could not give the presentation.','The presentation needed improvement.','She was not prepared.'],a:0,t:'l-negative',
+  w:['','Kata "couldn\'t" menjebak. Maknanya bukan "tidak bisa presentasi".','Kebalikannya. Tidak ada yang perlu diperbaiki.','Tidak ada petunjuk ia tidak siap.'],
+  ex:'"Couldn\'t have gone better" berarti tidak mungkin lebih baik lagi, jadi presentasinya sangat sukses.'},
+ {sec:'L',audio:[{who:'W',t:'The professor postponed the quiz until Monday.'},{who:'M',t:"That's a relief. I needed more time to review."},{who:'N',t:'What does the man mean?'}],
+  q:'What does the man mean?',opts:['He already took the quiz.','He is upset about the change.','He is glad to have more time to study.','He wants the quiz to be today.'],a:2,t:'l-implied',
+  w:['Kuisnya justru diundur, jadi belum diambil.','"That\'s a relief" berarti lega, bukan kesal.','','Ia senang kuis diundur.'],
+  ex:'"That\'s a relief" berarti lega. Ia senang punya waktu tambahan untuk belajar.'},
+ {sec:'L',audio:[{who:'M',t:"Should I take Professor Grant's class or Professor Lin's?"},{who:'W',t:"If I were you, I'd take Lin's. Her lectures are much clearer."},{who:'N',t:'What does the woman suggest?'}],
+  q:'What does the woman suggest?',opts:['Taking both classes','Taking Professor Grant\'s class','Asking Professor Lin for notes','Choosing Professor Lin\'s class'],a:3,t:'l-suggest',
+  w:['Ia hanya merekomendasikan satu kelas.','Ia merekomendasikan kelas yang lain.','Catatan kuliah tidak dibahas.',''],
+  ex:'"If I were you, I\'d…" adalah bentuk saran: pilih kelas Profesor Lin.'},
+ {sec:'L',audio:[{who:'W',t:'Is Tom coming to the study group tonight?'},{who:'M',t:"He's got a basketball game, so don't count on it."},{who:'N',t:'What does the man imply about Tom?'}],
+  q:'What does the man imply about Tom?',opts:['Tom will probably not come.','Tom will arrive early.','Tom does not like basketball.','Tom is leading the study group.'],a:0,t:'l-idiom',
+  w:['','Ia ada pertandingan, jadi kecil kemungkinan datang.','Ia justru ikut pertandingan basket.','Tidak disebut.'],
+  ex:'"Don\'t count on it" berarti jangan terlalu berharap. Tom kemungkinan besar tidak datang.'},
+ {sec:'L',audio:[{who:'W',t:"I don't think the cafeteria food has improved at all."},{who:'M',t:'Neither do I.'},{who:'N',t:'What does the man mean?'}],
+  q:'What does the man mean?',opts:['He thinks the food has improved.','He agrees that the food is no better.','He has never eaten in the cafeteria.','He wants to cook at home.'],a:1,t:'l-agree',
+  w:['"Neither do I" berarti setuju dengan pernyataan negatif wanita.','','Ia punya pendapat, berarti pernah makan di sana.','Tidak disebut.'],
+  ex:'"Neither do I" menyetujui kalimat negatif: ia juga merasa makanannya tidak membaik.'},
+ {sec:'L',audio:[{who:'W',t:'Did you get your test results back?'},{who:'M',t:"Not yet. Professor Kim said she'd return them on Thursday."},{who:'N',t:'What does the man mean?'}],
+  q:'What does the man mean?',opts:['He failed the test.','He got his results yesterday.','He will get his results on Thursday.','Professor Kim lost the tests.'],a:2,t:'l-detail',
+  w:['Nilai belum dibagikan, jadi belum diketahui.','"Not yet" berarti belum menerima.','','Tidak disebut.'],
+  ex:'"She\'d return them on Thursday" berarti hasilnya akan dibagikan hari Kamis.'},
+ {sec:'L',audio:[{who:'M',t:"Wow, you've finished the whole puzzle already?"},{who:'W',t:"It wasn't nearly as hard as it looked."},{who:'N',t:'What does the woman mean?'}],
+  q:'What does the woman mean?',opts:['The puzzle was easier than it seemed.','She needed help to finish it.','She did not finish the puzzle.','The puzzle was very difficult.'],a:0,t:'l-implied',
+  w:['','Bantuan tidak disebut.','Pria bilang ia sudah selesai.','Kebalikannya. "Not nearly as hard" berarti jauh lebih mudah.'],
+  ex:'"Not nearly as hard as it looked" berarti jauh lebih mudah dari kelihatannya.'},
+ {sec:'L',talk:true,audio:[...TALK4,{who:'N',t:'What is the talk mainly about?'}],
+  q:'What is the talk mainly about?',opts:['How nutmeg is grown and cooked','The history of New York','The value of nutmeg and a famous trade of territory','Life on the island of Run today'],a:2,t:'l-main',
+  w:['Cara menanam dan memasak pala tidak dibahas.','New York hanya bagian akhir cerita.','','Kehidupan di Run saat ini tidak dibahas.'],
+  ex:'Ceramah membahas mahalnya pala dan perjanjian yang menukar klaim atas Run dengan New Amsterdam.'},
+ {sec:'L',talk:true,audio:[...TALK4,{who:'N',t:'According to the speaker, what did the English keep under the Treaty of Breda?'}],
+  q:'According to the speaker, what did the English keep under the Treaty of Breda?',opts:['The island of Run','All of the Banda Islands','The nutmeg trade','New Amsterdam'],a:3,t:'l-detail',
+  w:['Inggris justru melepas klaim atas Run.','Tidak disebut.','Perdagangan pala tetap dikuasai Belanda.',''],
+  ex:'Inggris melepas Run dan sebagai gantinya mempertahankan New Amsterdam, yang kelak menjadi New York.'},
+ {sec:'S',q:'The Prambanan temple complex, ___ in the ninth century, is dedicated to the Hindu gods.',opts:['was built','built','building','it was built'],a:1,t:'participle',
+  w:['Kalimat jadi punya dua verb utama.','','Bermakna aktif, seolah candi yang membangun.','Membuat klausa ganda tanpa konjungsi.'],
+  ex:'Reduced relative clause pasif: "(which was) built" → "built".'},
+ {sec:'S',q:'___ the weather was bad, the ceremony was held outdoors.',opts:['Even though','Despite','Because of','In spite'],a:0,t:'conjunction',
+  w:['','"Despite" diikuti kata benda, bukan klausa.','Maknanya salah, dan diikuti kata benda.','Bentuk yang benar "in spite of", dan itu pun diikuti kata benda.'],
+  ex:'Sebelum klausa (the weather was bad) dibutuhkan konjungsi pertentangan "even though".'},
+ {sec:'S',q:'Hardly ___ the room when the phone started ringing.',opts:['I had entered','I entered','entering','had I entered'],a:3,t:'inversion',
+  w:['Tanpa inversi.','Tanpa inversi.','Tidak ada subjek dan verb.',''],
+  ex:'"Hardly" di awal kalimat menuntut inversi: "had I entered".'},
+ {sec:'S',q:'The committee recommended that the plan ___ immediately.',opts:['be revised','is revised','revised','will be revised'],a:0,t:'subjunctive',
+  w:['','Subjunctive tidak memakai "is".','Kurang "be" untuk makna pasif.','"Will" tidak dipakai dalam subjunctive.'],
+  ex:'Setelah "recommend that" dipakai bentuk dasar. Karena pasif: "be revised".'},
+ {sec:'S',q:'Java is ___ island in Indonesia.',opts:['most populous','the most populous','the more populous','more populous than'],a:1,t:'comparative',
+  w:['Superlatif butuh "the".','','Comparative untuk dua hal, padahal dibandingkan dengan semua pulau.','"Than" butuh pembanding setelahnya.'],
+  ex:'Dibandingkan dengan semua pulau di Indonesia → superlatif "the most populous".'},
+ {sec:'S',q:'The data ___ by the survey team were analyzed last week.',opts:['to collect','collecting','was collected','collected'],a:3,t:'participle',
+  w:['To-infinitive menyatakan tujuan, tidak cocok.','Bermakna aktif, seolah data yang mengumpulkan.','Kalimat jadi punya dua verb utama.',''],
+  ex:'Data dikumpulkan (pasif): "(which were) collected" → "collected".'},
+ {sec:'S',q:'Neither the map ___ the compass was useful in the fog.',opts:['or','and','nor','but'],a:2,t:'paired',
+  w:['"Or" berpasangan dengan "either".','"And" berpasangan dengan "both".','','"But" berpasangan dengan "not only".'],
+  ex:'Pasangan tetap: neither… nor.'},
+ {sec:'S',q:'It was ___ difficult exam that many students failed.',opts:['so','such a','so a','such'],a:1,t:'so-such',
+  w:['"So" diikuti adjective tanpa kata benda.','','Urutan yang benar "such a".','Kata benda tunggal "exam" butuh artikel "a".'],
+  ex:'such + a + adjective + noun + that.'},
+ {sec:'S',q:'Rice, ___ staple food for most Indonesians, is grown on many islands.',opts:['is the','which the','the','it is the'],a:2,t:'appositive',
+  w:['Verb tanpa subjek di antara koma.','"Which" butuh verb: which is the.','','Membuat klausa ganda.'],
+  ex:'Appositive di antara koma: "the staple food for most Indonesians".'},
+ {sec:'S',q:'The library ___ closed for renovation since July.',opts:['has been','is','was','had'],a:0,t:'tense',
+  w:['','"Since" butuh present perfect, bukan present.','"Since" butuh present perfect, bukan past.','"Had closed" atau "had been" tidak cocok dengan "since July" yang masih berlangsung.'],
+  ex:'"Since + titik waktu" menandakan present perfect: "has been closed".'},
+ {sec:'W',s:'The rivers in Kalimantan {have} long {served} as an important means of {transport} for {people live} there.',a:3,t:'participle',
+  w:['"Have" cocok dengan "rivers" (jamak).','Present perfect yang tepat.','Kata benda yang tepat.',''],
+  ex:'Butuh participle: "people living there" (= people who live there).'},
+ {sec:'W',s:'She {suggested} that we {visiting} the old town {before} {sunset}.',a:1,t:'subjunctive',
+  w:['Past tense yang benar.','','Preposisi waktu yang tepat.','Kata benda yang tepat.'],
+  ex:'Setelah "suggest that" dipakai bentuk dasar verb: "that we visit".'},
+ {sec:'W',s:'The new bridge was built {quick} {and} {efficiently} by {local} workers.',a:0,t:'wordform',
+  w:['','Penghubung yang benar.','Adverb yang benar.','Adjective yang tepat untuk "workers".'],
+  ex:'Yang diterangkan verb "built", jadi butuh adverb "quickly", paralel dengan "efficiently".'},
+ {sec:'W',s:'The {students} {waiting} outside the hall {has} {been} there since noon.',a:2,t:'sva',
+  w:['Subjek jamak yang benar.','Participle yang tepat.','','Bentuk yang benar setelah have/has.'],
+  ex:'Subjek intinya "the students" (jamak) → "have been".'},
+ {sec:'W',s:'Indonesia {consists} {of} more than seventeen thousand {island}, {many} of which are uninhabited.',a:2,t:'countable',
+  w:['Verb tunggal cocok dengan "Indonesia".','"Consists of" pasangan yang benar.','','"Many of which" sudah benar.'],
+  ex:'Setelah angka lebih dari satu dipakai kata benda jamak: "islands".'},
+ {sec:'W',s:'The manager {asked} {us} {finish} the report {by} Friday.',a:2,t:'gerund-inf',
+  w:['Past tense yang benar.','Object pronoun yang tepat.','','"By Friday" berarti paling lambat Jumat, sudah benar.'],
+  ex:'Pola ask + objek + to-infinitive: "asked us to finish".'},
+ {sec:'W',s:'The woman {which} lives next door {is} {a} {famous} singer.',a:0,t:'relative',
+  w:['','Verb tunggal yang tepat.','Artikel yang benar sebelum bunyi konsonan.','Adjective yang tepat.'],
+  ex:'Untuk orang dipakai "who", bukan "which".'},
+ {sec:'W',s:'Last year the city {built} a new park {where} children {can} {playing} safely.',a:3,t:'modal',
+  w:['Past tense cocok dengan "last year".','"Where" tepat untuk tempat.','Modal yang tepat.',''],
+  ex:'Setelah modal langsung bentuk dasar: "can play".'},
+ {sec:'W',s:'She bought {an} {useful} dictionary {for} her English {class}.',a:0,t:'article',
+  w:['','Adjective yang tepat.','Preposisi tujuan yang benar.','Kata benda yang tepat.'],
+  ex:'"Useful" diucapkan /ju:/ (bunyi konsonan), jadi "a useful".'},
+ {sec:'W',s:'Batik is {not only} beautiful {and} also {meaningful} {to} many Indonesians.',a:1,t:'paired',
+  w:['"Not only" sudah benar, tapi pasangannya salah.','','Adjective yang paralel dengan "beautiful".','Preposisi yang tepat.'],
+  ex:'Pasangan tetap: not only… but also.'},
+ {sec:'R',p:'orangutan',q:'What is the passage mainly about?',opts:['The diet of great apes','The life and survival of orangutans','The forests of Borneo','How animals build nests'],a:1,t:'r-main',
+  w:['Makanan hanya satu detail di paragraf 1.','','Hutan Kalimantan hanya habitatnya.','Sarang hanya satu detail.'],
+  ex:'Paragraf 1 membahas cara hidup, paragraf 2 membahas reproduksi dan ancaman kepunahan.'},
+ {sec:'R',p:'orangutan',q:'According to paragraph 1, what does an adult orangutan do every night?',opts:['Travels to a new island','Returns to the same nest','Builds a new nest in the trees','Sleeps on the ground'],a:2,t:'r-detail',
+  w:['Tidak disebut.','Bacaan menyebut sarang baru, bukan sarang yang sama.','','Sarangnya justru tinggi di dahan.'],
+  ex:'"Each night, an adult orangutan builds a new nest high in the branches."'},
+ {sec:'R',p:'orangutan',q:'The word "weaving" in paragraph 1 is closest in meaning to',opts:['twisting together','cutting','painting','throwing away'],a:0,t:'r-vocab',
+  w:['','Dahan ditekuk, bukan dipotong.','Tidak cocok dengan konteks.','Dahan dipakai untuk sarang, bukan dibuang.'],
+  ex:'Dahan ditekuk lalu dianyam bersama menjadi sarang.'},
+ {sec:'R',p:'orangutan',q:'It can be inferred from paragraph 2 that orangutan populations recover slowly because',opts:['young orangutans leave their mothers early','they eat only fruit','they live only in trees','females have young only every few years'],a:3,t:'r-infer',
+  w:['Kebalikannya. Anak tinggal bersama induk selama bertahun-tahun.','Mereka juga makan daun dan serangga.','Tidak dikaitkan dengan pemulihan populasi.',''],
+  ex:'Betina hanya melahirkan sekitar 7–8 tahun sekali, sehingga jumlahnya lambat bertambah.'},
+ {sec:'R',p:'orangutan',q:'Which of the following is NOT mentioned in the passage?',opts:['The meaning of the name "orangutan"','How long young orangutans stay with their mothers','The average weight of an adult orangutan','The main threat to orangutans'],a:2,t:'r-notmentioned',
+  w:['Disebut: "person of the forest".','Disebut: beberapa tahun.','','Disebut: hilangnya hutan.'],
+  ex:'Berat badan orangutan tidak pernah disebut.'},
+ {sec:'R',p:'gardencity',q:'What is the main purpose of the passage?',opts:["To describe Ebenezer Howard's idea for planned towns",'To criticize industrial cities in Britain','To compare Letchworth and Welwyn Garden City','To explain how farmland is managed'],a:0,t:'r-purpose',
+  w:['','Kota industri hanya latar belakang masalah.','Kedua kota hanya disebut sebagai contoh.','Lahan pertanian hanya satu bagian rencana.'],
+  ex:'Seluruh bacaan menjelaskan gagasan garden city dan pengaruhnya.'},
+ {sec:'R',p:'gardencity',q:"According to Howard's plan, where would factories be located?",opts:['In the central park','Next to public buildings','At the edge of the town','In the belt of farmland'],a:2,t:'r-detail',
+  w:['Taman ada di pusat kota, bukan pabrik.','Gedung publik mengelilingi taman pusat.','','Sabuk pertanian ada di luar kota.'],
+  ex:'"Factories would be placed at the edge of the town."'},
+ {sec:'R',p:'gardencity',q:'The word "fixed" in paragraph 2 is closest in meaning to',opts:['repaired','growing','attached','set'],a:3,t:'r-vocab',
+  w:['Arti lain "fixed" yang tidak cocok dengan konteks.','Kebalikannya. Penduduk dibatasi.','Tidak cocok dengan konteks.',''],
+  ex:'Jumlah penduduk ditetapkan sekitar 32.000 jiwa.'},
+ {sec:'R',p:'gardencity',q:'The phrase "the first one" in paragraph 2 refers to',opts:['the central park','the original garden city','the first factory',"Howard's first book"],a:1,t:'r-ref',
+  w:['Taman tidak "tumbuh lebih besar" dalam konteks ini.','','Pabrik tidak dibahas di kalimat itu.','Buku dibahas di paragraf 1.'],
+  ex:'Jika kota mencapai batas, dibangun garden city baru alih-alih memperbesar kota yang pertama.'},
+ {sec:'R',p:'gardencity',q:'It can be inferred that Howard believed cities',opts:['should grow as large as possible','should not keep growing without limit','did not need parks','should be built only in the countryside'],a:1,t:'r-infer',
+  w:['Bertentangan dengan batas penduduk.','','Taman justru ada di pusat rencananya.','Ia ingin menggabungkan keunggulan kota dan desa.'],
+  ex:'Batas penduduk dan pembangunan kota baru menunjukkan kota tidak boleh tumbuh tanpa batas.'}
+]},
+{name:'Paket 5',items:[
+ {sec:'L',audio:[{who:'M',t:"I'm thinking of taking five classes next semester."},{who:'W',t:"That's a heavy load. Are you sure you'll have time for your job?"},{who:'N',t:'What does the woman imply?'}],
+  q:'What does the woman imply?',opts:['She will take five classes too.','He may not have enough time for his job.','He should quit his job.','Five classes is a light load.'],a:1,t:'l-implied',
+  w:['Tidak disebut.','','Ia ragu, tapi tidak menyarankan berhenti kerja.','"Heavy load" berarti beban berat.'],
+  ex:'Pertanyaan "Are you sure…?" menunjukkan ia ragu pria punya cukup waktu.'},
+ {sec:'L',audio:[{who:'W',t:'Can you give me a ride to the airport on Saturday?'},{who:'M',t:"I'd be glad to, as long as your flight isn't too early."},{who:'N',t:'What does the man mean?'}],
+  q:'What does the man mean?',opts:['He cannot drive on Saturday.','Her flight has been canceled.','He will take a taxi to the airport.','He will help if the flight is not too early.'],a:3,t:'l-condition',
+  w:['Ia mau mengantar, dengan syarat.','Tidak disebut.','Taksi tidak disebut.',''],
+  ex:'"As long as…" berarti dengan syarat. Ia mau mengantar asal penerbangannya tidak terlalu pagi.'},
+ {sec:'L',audio:[{who:'M',t:"Let's study at the library tonight."},{who:'W',t:"Wouldn't the coffee shop be more comfortable?"},{who:'N',t:'What does the woman suggest?'}],
+  q:'What does the woman suggest?',opts:['Studying at the coffee shop','Studying at the library','Not studying tonight','Studying at her house'],a:0,t:'l-suggest',
+  w:['','Itu usul pria, bukan wanita.','Ia tetap ingin belajar, hanya beda tempat.','Rumah tidak disebut.'],
+  ex:'"Wouldn\'t … be more comfortable?" adalah cara halus mengusulkan kedai kopi.'},
+ {sec:'L',audio:[{who:'W',t:'Professor Davis gave me an A on my paper!'},{who:'M',t:'No wonder you look so happy.'},{who:'N',t:'What does the man mean?'}],
+  q:'What does the man mean?',opts:['He also got an A.','He is surprised by her grade.','He understands why she is happy.','He thinks the paper was too easy.'],a:2,t:'l-implied',
+  w:['Nilainya sendiri tidak disebut.','"No wonder" justru berarti tidak heran.','','Tidak disebut.'],
+  ex:'"No wonder…" berarti pantas saja. Ia paham kenapa wanita itu senang.'},
+ {sec:'L',audio:[{who:'M',t:'Did you enjoy the field trip to the museum?'},{who:'W',t:"I sure did. I'd go again in a heartbeat."},{who:'N',t:'What does the woman mean?'}],
+  q:'What does the woman mean?',opts:['She did not like the trip.','She would happily go again.','She went only once because it was boring.','Her heart was hurting.'],a:1,t:'l-idiom',
+  w:['"I sure did" berarti ia menikmatinya.','','Ia justru ingin pergi lagi.','Arti harfiah, padahal ini idiom.'],
+  ex:'"In a heartbeat" berarti tanpa ragu sedikit pun.'},
+ {sec:'L',audio:[{who:'W',t:'You look tired.'},{who:'M',t:"My neighbor's dog barked all night long."},{who:'N',t:'What does the man imply?'}],
+  q:'What does the man imply?',opts:['He has a new dog.','He worked all night.','He did not sleep well.','He wants to buy a dog.'],a:2,t:'l-implied',
+  w:['Anjingnya milik tetangga.','Kerja tidak disebut.','','Tidak disebut.'],
+  ex:'Anjing menggonggong semalaman, jadi ia kurang tidur.'},
+ {sec:'L',audio:[{who:'M',t:'Has the bookstore received the new textbooks?'},{who:'W',t:"They were supposed to arrive last week, but they're still not in."},{who:'N',t:'What does the woman say about the textbooks?'}],
+  q:'What does the woman say about the textbooks?',opts:['They have not arrived yet.','They arrived last week.','They are sold out.','They are too expensive.'],a:0,t:'l-but',
+  w:['','"Supposed to" berarti seharusnya, tapi kenyataannya tidak.','Tidak disebut.','Harga tidak disebut.'],
+  ex:'Bagian setelah "but" adalah intinya: "still not in", berarti belum datang.'},
+ {sec:'L',audio:[{who:'W',t:"I'm not sure whether to major in economics or planning."},{who:'M',t:'Why not talk to an academic advisor before you decide?'},{who:'N',t:'What does the man suggest?'}],
+  q:'What does the man suggest?',opts:['Choosing economics','Choosing planning','Majoring in both subjects','Getting advice before deciding'],a:3,t:'l-suggest',
+  w:['Ia tidak memilihkan jurusan.','Ia tidak memilihkan jurusan.','Tidak disebut.',''],
+  ex:'"Why not talk to an academic advisor" berarti minta saran dulu sebelum memutuskan.'},
+ {sec:'L',talk:true,audio:[...TALK5,{who:'N',t:'What is the talk mainly about?'}],
+  q:'What is the talk mainly about?',opts:['Why cities are warmer than surrounding areas','How air conditioners work','The history of asphalt','Farming in the countryside'],a:0,t:'l-main',
+  w:['','AC hanya disebut sebagai salah satu sumber panas.','Aspal hanya contoh material.','Pedesaan hanya pembanding.'],
+  ex:'Topiknya urban heat island: kenapa kota lebih panas dari daerah sekitarnya.'},
+ {sec:'L',talk:true,audio:[...TALK5,{who:'N',t:'Which solution does the speaker mention?'}],
+  q:'Which solution does the speaker mention?',opts:['Building more highways','Using light-colored materials','Moving factories to the countryside','Banning cars in cities'],a:1,t:'l-detail',
+  w:['Jalan beraspal justru menambah panas.','','Tidak disebut.','Mobil disebut sebagai sumber panas, bukan dilarang.'],
+  ex:'Solusi yang disebut: menanam pohon, atap hijau, dan material berwarna terang yang memantulkan sinar matahari.'},
+ {sec:'S',q:'The students ___ the experiment before the teacher arrived.',opts:['have finished','had finished','finish','finishing'],a:1,t:'tense',
+  w:['Present perfect tidak cocok dengan konteks lampau.','','Present tense tidak cocok.','Bukan verb lengkap.'],
+  ex:'Kejadian sebelum kejadian lampau lain (teacher arrived) memakai past perfect.'},
+ {sec:'S',q:'___ is known about the early history of the Majapahit kingdom comes from inscriptions.',opts:['What','That','It','Which'],a:0,t:'noun-clause',
+  w:['','"That is known" tidak bisa menjadi subjek di sini.','"It is known" membuat kalimat punya dua verb utama.','"Which" butuh kata benda yang dirujuk.'],
+  ex:'"What is known about…" adalah noun clause yang menjadi subjek dari "comes".'},
+ {sec:'S',q:'If the students had studied harder, they ___ the exam.',opts:['would pass','will pass','would have passed','passed'],a:2,t:'conditional',
+  w:['Itu type 2, padahal klausa if memakai past perfect.','Type 1 tidak cocok.','','Bentuk lampau biasa tidak cocok.'],
+  ex:'Conditional type 3: If + had + V3, would have + V3.'},
+ {sec:'S',q:'The Mahakam River, ___ through East Kalimantan, is about 920 kilometers long.',opts:['flows','which flowing','flowing','it flows'],a:2,t:'participle',
+  w:['Kalimat jadi punya dua verb utama.','"Which" butuh verb lengkap: which flows.','','Membuat klausa ganda.'],
+  ex:'Present participle "flowing" (aktif) = which flows.'},
+ {sec:'S',q:'Not only ___ delicious, but it is also healthy.',opts:['tempeh is','is tempeh','tempeh being','does tempeh'],a:1,t:'inversion',
+  w:['Tanpa inversi.','','Bukan verb lengkap.','Verb "be" dibalik langsung tanpa "does".'],
+  ex:'"Not only" di awal kalimat → inversi. Dengan verb "be": "is tempeh".'},
+ {sec:'S',q:'The teacher told the class ___ quietly.',opts:['to work','work','working','worked'],a:0,t:'gerund-inf',
+  w:['','Kurang "to".','Gerund tidak dipakai setelah tell + objek.','Bentuk lampau tidak cocok.'],
+  ex:'Pola tell + objek + to-infinitive.'},
+ {sec:'S',q:'There are ___ volcanoes in Indonesia than in any other country.',opts:['most','much','many','more'],a:3,t:'comparative',
+  w:['Superlatif tidak dipakai dengan "than".','"Much" untuk uncountable.','"Many" bukan comparative.',''],
+  ex:'Ada "than", jadi butuh comparative "more".'},
+ {sec:'S',q:'Each of the villages ___ its own traditional dance.',opts:['have','having','has','are having'],a:2,t:'sva',
+  w:['"Each of" selalu tunggal.','Bukan verb lengkap.','','Jamak dan bentuk continuous tidak cocok.'],
+  ex:'"Each of + noun jamak" tetap memakai verb tunggal.'},
+ {sec:'S',q:'The museum was ___ crowded that we could hardly move.',opts:['such','so','very','too'],a:1,t:'so-such',
+  w:['"Such" diikuti kata benda.','','"Very" tidak berpasangan dengan "that".','"Too" tidak berpasangan dengan "that".'],
+  ex:'so + adjective + that.'},
+ {sec:'S',q:'Sea turtles return to the beach ___ they were born to lay their eggs.',opts:['where','which','when','what'],a:0,t:'relative',
+  w:['','"Which" butuh preposisi: on which.','"When" untuk waktu, bukan tempat.','"What" tidak dipakai setelah kata benda.'],
+  ex:'"Where" untuk tempat (the beach where they were born).'},
+ {sec:'W',s:'The price of fresh vegetables {has} {risen} {sharp} {this} month.',a:2,t:'wordform',
+  w:['"Has" cocok dengan "the price".','V3 yang benar.','','Penunjuk waktu yang benar.'],
+  ex:'Verb "risen" diterangkan adverb → "sharply".'},
+ {sec:'W',s:'{The} tourists {were} {amazing} by the {beauty} of Raja Ampat.',a:2,t:'wordform',
+  w:['Artikel yang benar.','Verb jamak yang tepat.','','Kata benda yang tepat.'],
+  ex:'Untuk perasaan orang pakai "amazed", bukan "amazing".'},
+ {sec:'W',s:'{To ride} a bicycle, {swimming}, and {jogging} are {good} forms of exercise.',a:0,t:'parallel',
+  w:['','Gerund yang benar.','Gerund yang benar.','Adjective yang tepat.'],
+  ex:'Agar paralel dengan "swimming" dan "jogging", pakai "Riding".'},
+ {sec:'W',s:'{Despite} it was raining, the farmers {continued} {working} {in} the fields.',a:0,t:'conjunction',
+  w:['','Past tense yang benar.','Gerund setelah "continued" boleh dipakai.','Preposisi yang tepat.'],
+  ex:'Sebelum klausa (it was raining) dipakai "Although", bukan "Despite".'},
+ {sec:'W',s:'The stories {in} the book {that} I borrowed from Andi {is} {very} interesting.',a:2,t:'sva',
+  w:['Preposisi yang benar.','Relative pronoun yang tepat.','','Adverb yang tepat.'],
+  ex:'Subjek intinya "the stories" (jamak) → "are".'},
+ {sec:'W',s:'We look {forward} to {see} you {at} the {conference}.',a:1,t:'gerund-inf',
+  w:['"Look forward to" sudah benar.','','Preposisi tempat yang benar.','Kata benda yang tepat.'],
+  ex:'"Look forward to + V-ing" → "seeing".'},
+ {sec:'W',s:'{An} university student {must} {submit} the form {online}.',a:0,t:'article',
+  w:['','Modal yang tepat.','Bentuk dasar setelah modal, sudah benar.','Adverb yang tepat.'],
+  ex:'"University" diucapkan /ju:/ (bunyi konsonan), jadi "a university".'},
+ {sec:'W',s:'If I {were} you, I {will} {apply} {for} the scholarship.',a:1,t:'conditional',
+  w:['"Were" dipakai untuk semua subjek pada type 2.','','Bentuk dasar setelah modal.','"Apply for" pasangan yang benar.'],
+  ex:'Conditional type 2: If + past, would + V → "I would apply".'},
+ {sec:'W',s:'Although the {advice} from my teacher {were} {helpful}, I still {felt} nervous.',a:1,t:'countable',
+  w:['"Advice" tanpa -s sudah benar.','','Adjective yang tepat.','Past tense yang konsisten.'],
+  ex:'"Advice" uncountable, jadi verb-nya tunggal: "was helpful".'},
+ {sec:'W',s:'The {committee} will announce the winners {after} it {has} {review} all the entries.',a:3,t:'tense',
+  w:['Kata benda tunggal yang benar.','Konjungsi waktu yang tepat.','"Has" cocok dengan "it".',''],
+  ex:'Present perfect butuh V3: "has reviewed".'},
+ {sec:'R',p:'subak',q:'What is the passage mainly about?',opts:['The history of rice in Asia','A traditional water management system in Bali','The tourism industry in Bali','How rice terraces are built'],a:1,t:'r-main',
+  w:['Terlalu luas. Bacaan hanya membahas Bali.','','Pariwisata tidak dibahas.','Cara membangun terasering tidak dijelaskan.'],
+  ex:'Seluruh bacaan membahas subak sebagai sistem pengelolaan air di Bali.'},
+ {sec:'R',p:'subak',q:'According to paragraph 2, where do priests and farmers meet to make decisions?',opts:['At water temples','In rice fields','At the village market','In government offices'],a:0,t:'r-detail',
+  w:['','Tidak disebut sebagai tempat bertemu.','Tidak disebut.','Tidak disebut.'],
+  ex:'"Priests and farmers meet at these temples to decide when to plant."'},
+ {sec:'R',p:'subak',q:'The word "coordinating" in paragraph 2 is closest in meaning to',opts:['delaying','reducing','organizing together','recording'],a:2,t:'r-vocab',
+  w:['Tidak cocok dengan konteks.','Tidak cocok dengan konteks.','','Tidak cocok dengan konteks.'],
+  ex:'Jadwal tanam diatur bersama agar sawah bertetangga serempak.'},
+ {sec:'R',p:'subak',q:'According to the passage, why are neighboring fields flooded or left dry at the same time?',opts:['To save money','To attract tourists','To produce more water','To help control pests'],a:3,t:'r-detail',
+  w:['Tidak disebut.','Tidak disebut.','Air dibagi, bukan diproduksi.',''],
+  ex:'"…at the same time, which helps reduce pests."'},
+ {sec:'R',p:'subak',q:'It can be inferred from the passage that subak is',opts:['only a modern invention','both a farming and a religious system','used only on one farm','no longer used today'],a:1,t:'r-infer',
+  w:['Sudah berjalan lebih dari seribu tahun.','','Subak adalah komunitas banyak petani.','Masih diakui UNESCO pada 2012.'],
+  ex:'Subak mengatur irigasi sekaligus terkait erat dengan pura dan kehidupan religius.'},
+ {sec:'R',p:'gutenberg',q:'What is the passage mainly about?',opts:['The life of monks in Europe',"How Gutenberg's printing press changed book production",'The history of the city of Mainz','How wine presses work'],a:1,t:'r-main',
+  w:['Biarawan hanya disebut sebagai penyalin buku sebelumnya.','','Mainz hanya asal Gutenberg.','Mesin anggur hanya pembanding.'],
+  ex:'Bacaan membahas penemuan Gutenberg dan dampaknya pada produksi buku.'},
+ {sec:'R',p:'gutenberg',q:"According to the passage, what was Gutenberg's profession?",opts:['A monk','A scribe','A goldsmith','A winemaker'],a:2,t:'r-detail',
+  w:['Biarawan adalah penyalin buku sebelum era cetak.','Penyalin profesional juga disebut, tapi bukan Gutenberg.','','Mesin anggur hanya dijadikan model mesin cetak.'],
+  ex:'"Johannes Gutenberg, a goldsmith from the German city of Mainz."'},
+ {sec:'R',p:'gutenberg',q:'The word "those" in paragraph 1 refers to',opts:['letters','pages','inks','presses'],a:3,t:'r-ref',
+  w:['Tidak cocok dengan "used to make wine".','Tidak cocok.','Tidak cocok.',''],
+  ex:'"A press similar to those (presses) used to make wine."'},
+ {sec:'R',p:'gutenberg',q:'Why does the author mention the Bible printed around 1455?',opts:['To show that printed books could be of high quality','To explain why monks stopped copying books','To prove that Gutenberg was religious','To compare German and Italian books'],a:0,t:'r-purpose',
+  w:['','Tidak dibahas.','Tidak dibahas.','Tidak dibahas.'],
+  ex:'"Showed that printed books could be as beautiful as handwritten ones."'},
+ {sec:'R',p:'gutenberg',q:'It can be inferred that before printing became common,',opts:['most people owned many books','few people had access to books','books were cheaper than today','reading was not allowed'],a:1,t:'r-infer',
+  w:['Bertentangan: buku langka.','','Bertentangan: buku mahal.','Tidak ada dasar di bacaan.'],
+  ex:'Buku langka dan mahal, dan banyak orang baru bisa membaca setelah buku murah.'}
+]}
+];
+
+/* ratakan ke satu bank soal */
+const Q=[];
+PACKS.forEach((P,pi)=>P.items.forEach((q,k)=>{q.id=(pi+1)*100+k;q.pack=pi;Q.push(q)}));
+
+const SEC={
+ L:{name:'Listening Comprehension',dir:'Dengarkan percakapan, lalu pilih jawaban terbaik. Teks audio baru ditampilkan setelah jawaban diperiksa.'},
+ S:{name:'Structure',dir:'Pilih kata atau frasa yang paling tepat untuk melengkapi kalimat.'},
+ W:{name:'Written Expression',dir:'Pilih satu bagian bergaris bawah yang SALAH dan harus diperbaiki.'},
+ R:{name:'Reading Comprehension',dir:'Baca teks, lalu jawab pertanyaan berdasarkan isi bacaan.'}
+};
+const L4='ABCD';
+const byId=id=>Q.find(q=>q.id===id);
+
+/* ================= STORAGE ================= */
+function sget(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
+function sset(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+const HKEY='toefl-itp-history-v1', WKEY='toefl-itp-wrong-v1', PKEY='toefl-itp-pack-v1';
+let selPack=sget(PKEY,0);
+
+/* ================= TTS ================= */
+const synth=('speechSynthesis' in window)?window.speechSynthesis:null;
+let voices=[];
+function loadVoices(){if(!synth)return;voices=synth.getVoices().filter(v=>/^en[-_]/i.test(v.lang))}
+if(synth){loadVoices();synth.onvoiceschanged=loadVoices}
+function pickVoice(who){
+  if(!voices.length)return null;
+  const us=voices.filter(v=>/en[-_]US/i.test(v.lang));const pool=us.length?us:voices;
+  const fem=/female|zira|samantha|aria|jenny|susan|hazel|karen|victoria|libby|sonia|michelle|ava|allison/i;
+  const mal=/\bmale|david|mark|guy|daniel|alex|george|ryan|fred|christopher|eric|tom/i;
+  if(who==='W')return pool.find(v=>fem.test(v.name))||pool[0];
+  if(who==='M')return pool.find(v=>mal.test(v.name)&&!/female/i.test(v.name))||pool[1]||pool[0];
+  return pool.find(v=>/google/i.test(v.name))||pool[0];
+}
+/* Suara asli Android (WebView tidak punya speechSynthesis) */
+const nativeTTS=window.AndroidTTS||null;
+const hasTTS=!!(nativeTTS||synth);
+let ttsSeq=0, ttsDone=null;
+window.__ttsDone=function(id){if(id===String(ttsSeq)&&ttsDone){const f=ttsDone;ttsDone=null;f()}};
+function speak(lines,onEnd){
+  if(nativeTTS){
+    const parts=[];
+    lines.forEach(l=>l.t.split(/(?<=[.?!])\s+/).forEach(s=>parts.push({t:s,p:l.who==='W'?1.25:l.who==='M'?.85:1})));
+    ttsSeq++;ttsDone=onEnd||null;
+    nativeTTS.speakAll(JSON.stringify(parts),String(ttsSeq));
+    return;
+  }
+  if(!synth){onEnd&&onEnd();return}
+  synth.cancel();
+  const parts=[];
+  lines.forEach(l=>l.t.split(/(?<=[.?!])\s+/).forEach(s=>parts.push({who:l.who,t:s})));
+  parts.forEach((p,i)=>{
+    const u=new SpeechSynthesisUtterance(p.t);
+    u.lang='en-US';const v=pickVoice(p.who);if(v)u.voice=v;
+    u.rate=.95;u.pitch=p.who==='W'?1.25:p.who==='M'?.85:1;
+    if(i===parts.length-1)u.onend=u.onerror=()=>onEnd&&onEnd();
+    synth.speak(u);
+  });
+}
+function stopAudio(){ttsDone=null;if(nativeTTS){try{nativeTTS.stop()}catch(e){}}else if(synth)synth.cancel()}
+
+/* ================= PEMILIHAN SOAL ================= */
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function randomSet(){
+  // Listening: 8 percakapan acak + 1 pasang ceramah; Reading: 2 bacaan acak
+  const conv=shuffle(Q.filter(q=>q.sec==='L'&&!q.talk)).slice(0,8);
+  const tp=Math.floor(Math.random()*PACKS.length);
+  const talk=Q.filter(q=>q.sec==='L'&&q.talk&&q.pack===tp);
+  const S=shuffle(Q.filter(q=>q.sec==='S')).slice(0,10);
+  const W=shuffle(Q.filter(q=>q.sec==='W')).slice(0,10);
+  const ps=shuffle(Object.keys(PASSAGES)).slice(0,2);
+  const R=ps.flatMap(p=>Q.filter(q=>q.p===p));
+  return [...conv,...talk,...S,...W,...R].map(q=>q.id);
+}
+function packSet(pack,secs){
+  if(pack==='x'){return randomSet().filter(id=>secs.includes(byId(id).sec))}
+  return Q.filter(q=>q.pack===pack&&secs.includes(q.sec)).map(q=>q.id);
+}
+function packLabel(p){return p==='x'?'Acak':PACKS[p].name}
+
+/* ================= STATE ================= */
+let st=null, tick=null, playing=false, confirmEnd=false, revFilter='wrong';
+const app=document.getElementById('app');
+
+function startTest(mode,ids,label){
+  stopAudio();playing=false;
+  st={mode,ids,label,cur:0,ans:{},plays:{},flags:{},start:Date.now(),limit:mode==='sim'?30*60:0,done:false};
+  confirmEnd=false;clearInterval(tick);
+  if(st.limit)tick=setInterval(()=>{updTimer();if(remaining()<=0)finish()},1000);
+  renderTest();window.scrollTo(0,0);
+}
+function remaining(){return st.limit-Math.floor((Date.now()-st.start)/1000)}
+function fmtTime(s){s=Math.max(0,s);return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')}
+function updTimer(){const el=document.getElementById('timer');if(!el||!st)return;
+  if(st.done){el.textContent=fmtTime(st.result.used);el.classList.remove('low');return}
+  if(st.limit){const r=remaining();el.textContent=fmtTime(r);el.classList.toggle('low',r<=300)}
+  else el.textContent=fmtTime(Math.floor((Date.now()-st.start)/1000));}
+
+/* ================= HOME ================= */
+function renderHome(){
+  stopAudio();clearInterval(tick);st=null;playing=false;
+  const h=sget(HKEY,[]), wrong=sget(WKEY,[]).filter(id=>byId(id));
+  const chips=[...PACKS.map((P,i)=>({v:i,t:P.name})),{v:'x',t:'Acak'}];
+  app.innerHTML=`
+  <div class="home">
+    <header class="masthead">
+      <span class="formcode">BANK SOAL ${Q.length} · ${PACKS.length} PAKET · 3 BAGIAN</span>
+      <h1>Simulasi TOEFL ITP</h1>
+      <p>Latihan format Paper-Based TOEFL ITP: Listening dengan audio, Structure & Written Expression, dan Reading. Setiap jawaban salah dibahas: kenapa pilihanmu keliru, kenapa kunci benar, dan materi yang perlu diulang.</p>
+    </header>
+    <section class="panel">
+      <span class="label">Pilih paket soal</span>
+      <div class="chips" role="radiogroup" aria-label="Paket soal">${chips.map(c=>`<button class="chip ${c.v===selPack?'on':''}" data-pack="${c.v}" role="radio" aria-checked="${c.v===selPack}">${c.t}</button>`).join('')}</div>
+      <p class="note">${selPack==='x'?'Paket acak mengambil 40 soal dari seluruh bank. Setiap kali dimulai, isinya berbeda.':`${PACKS[selPack].name}: 10 Listening, 10 Structure, 10 Written Expression, 10 Reading (2 bacaan).`}</p>
+    </section>
+    <div class="grid2">
+      <section class="panel">
+        <span class="label">Mode ujian · ${packLabel(selPack)}</span>
+        <h2>Simulasi berwaktu</h2>
+        <p>40 soal, 30 menit. Pembahasan muncul setelah selesai. Audio listening hanya bisa diputar 2 kali per soal.</p>
+        <div class="row"><button class="btn primary" id="go-sim">Mulai simulasi</button></div>
+      </section>
+      <section class="panel">
+        <span class="label">Mode latihan · ${packLabel(selPack)}</span>
+        <h2>Latihan per bagian</h2>
+        <p>Tanpa batas waktu. Jawaban langsung diperiksa, lengkap dengan alasan dan materi singkat.</p>
+        <div class="row">
+          <button class="btn" data-prac="L">Listening</button>
+          <button class="btn" data-prac="SW">Structure & WE</button>
+          <button class="btn" data-prac="R">Reading</button>
+          <button class="btn" data-prac="LSWR">Semua bagian</button>
+        </div>
+      </section>
+    </div>
+    <div class="grid2">
+      <section class="panel">
+        <span class="label">Soal yang pernah salah</span>
+        <h2>${wrong.length?`${wrong.length} soal perlu diulang`:'Belum ada soal salah'}</h2>
+        <p>${wrong.length?'Soal yang kamu jawab salah di sesi mana pun tersimpan di sini. Soal hilang dari daftar setelah dijawab benar.':'Setiap soal yang salah akan masuk ke daftar ini agar bisa dilatih ulang.'}</p>
+        <div class="row"><button class="btn" id="go-wrong" ${wrong.length?'':'disabled'}>Latihan ulang soal salah</button>${wrong.length?'<button class="btn" id="clr-wrong">Kosongkan daftar</button>':''}</div>
+      </section>
+      <section class="panel">
+        <span class="label">Riwayat skor di komputer ini</span>
+        ${h.length?`<ul class="hist">${h.map(r=>`<li><span>${r.date} · ${r.label}</span><span class="sc">${r.score}</span></li>`).join('')}</ul>`
+          :`<p>Belum ada riwayat. Selesaikan satu simulasi atau latihan, skornya akan tersimpan di sini.</p>`}
+        <div class="keys"><span><kbd>A</kbd>–<kbd>D</kbd> pilih jawaban</span><span><kbd>←</kbd><kbd>→</kbd> pindah soal</span><span><kbd>Spasi</kbd> putar audio</span></div>
+        ${hasTTS?'':'<p class="note" style="color:var(--bad)">Browser ini tidak mendukung suara (text-to-speech). Gunakan Chrome, Edge, atau Safari agar Listening bisa diputar.</p>'}
+      </section>
+    </div>
+    <section class="panel">
+      <span class="label">Format TOEFL ITP asli</span>
+      <div style="overflow-x:auto"><table class="fmt">
+        <thead><tr><th>Bagian</th><th style="text-align:right">Soal</th><th style="text-align:right">Waktu</th><th style="text-align:right">Skor</th></tr></thead>
+        <tbody>
+          <tr><td>Listening Comprehension</td><td class="n">50</td><td class="n">35 mnt</td><td class="n">31–68</td></tr>
+          <tr><td>Structure & Written Expr.</td><td class="n">40</td><td class="n">25 mnt</td><td class="n">31–68</td></tr>
+          <tr><td>Reading Comprehension</td><td class="n">50</td><td class="n">55 mnt</td><td class="n">31–67</td></tr>
+          <tr><td><strong>Total</strong></td><td class="n">140</td><td class="n">115 mnt</td><td class="n"><strong>310–677</strong></td></tr>
+        </tbody></table></div>
+      <p class="note">Program ini versi ringkas 40 soal per sesi. Skor yang keluar adalah perkiraan, bukan skor resmi ETS.</p>
+    </section>
+  </div>`;
+  app.querySelectorAll('[data-pack]').forEach(b=>b.onclick=()=>{const v=b.dataset.pack;selPack=v==='x'?'x':+v;sset(PKEY,selPack);renderHome()});
+  document.getElementById('go-sim').onclick=()=>startTest('sim',packSet(selPack,['L','S','W','R']),packLabel(selPack)+' · Simulasi');
+  app.querySelectorAll('[data-prac]').forEach(b=>b.onclick=()=>{
+    const secs=b.dataset.prac.split('');const nm={L:'Listening',SW:'Structure',R:'Reading',LSWR:'Semua'}[b.dataset.prac];
+    startTest('prac',packSet(selPack,secs),packLabel(selPack)+' · Latihan '+nm)});
+  const gw=document.getElementById('go-wrong');
+  if(gw)gw.onclick=()=>startTest('prac',orderIds(wrong),'Ulang soal salah');
+  const cw=document.getElementById('clr-wrong');
+  if(cw)cw.onclick=()=>{if(cw.dataset.c){sset(WKEY,[]);renderHome()}else{cw.dataset.c='1';cw.textContent='Yakin? Klik lagi';cw.classList.add('danger')}};
+}
+function orderIds(ids){const o={L:0,S:1,W:2,R:3};return ids.slice().sort((a,b)=>{const A=byId(a),B=byId(b);return o[A.sec]-o[B.sec]||a-b})}
+
+/* ================= TEST ================= */
+function isLocked(id){return st.done||(st.mode==='prac'&&st.ans[id]!==undefined)}
+function secTitle(sec){return sec==='S'||sec==='W'?'Structure & Written Expression':SEC[sec].name}
+function renderWE(s){let k=0;return s.replace(/\{([^}]+)\}/g,(m,t)=>`<span class="u" data-l="${L4[k++]}">${t}</span>`)}
+function optsOf(q){return q.sec==='W'?[...q.s.matchAll(/\{([^}]+)\}/g)].map(m=>m[1]):q.opts}
+function wrongNote(q,k){
+  if(q.w&&q.w[k])return q.w[k];
+  return q.sec==='W'?`Bagian "${optsOf(q)[k]}" sudah benar. Kesalahannya ada di bagian lain.`:'Pilihan ini tidak didukung informasi dalam soal.';
+}
+
+function feedbackHTML(q,my){
+  const opts=optsOf(q), ok=my===q.a, tip=TIPS[q.t];
+  const state=my===undefined?'na':ok?'ok':'no';
+  let h=`<div class="feedback ${state}">
+    <strong>${my===undefined?'Tidak dijawab':ok?'Benar':'Kurang tepat'} · Kunci ${L4[q.a]}${q.sec==='W'?` · bagian "${opts[q.a]}"`:''}</strong>`;
+  if(my!==undefined&&!ok)h+=`<div class="why no"><span class="label">Kenapa ${L4[my]} salah</span><p>${wrongNote(q,my)}</p></div>`;
+  h+=`<div class="why ok"><span class="label">${ok?'Pembahasan':`Kenapa ${L4[q.a]} benar`}</span><p>${q.ex}</p></div>`;
+  if(!ok){
+    const others=[0,1,2,3].filter(k=>k!==q.a&&k!==my);
+    h+=`<details class="others"><summary>Lihat alasan pilihan lainnya</summary><ul>${others.map(k=>`<li><b class="mono">${L4[k]}</b> ${q.sec==='W'?`"${opts[k]}"`:opts[k]} — ${wrongNote(q,k)}</li>`).join('')}</ul></details>`;
+  }
+  h+=`</div>`;
+  if(tip)h+=`<div class="tip"><span class="label">Materi · ${tip[0]}</span><p>${tip[1]}</p></div>`;
+  return h;
+}
+
+function renderTest(){
+  const id=st.ids[st.cur], q=byId(id), n=st.cur+1, tot=st.ids.length;
+  const locked=isLocked(id), my=st.ans[id], opts=optsOf(q);
+  let body='';
+  if(q.sec==='L'){
+    const used=st.plays[id]||0, left=2-used, canPlay=st.mode==='prac'||st.done||left>0;
+    body+=`<div class="audio ${playing?'playing':''}" id="audio">
+      <button class="play" id="play" ${(!canPlay||!hasTTS)?'disabled':''}>
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">${playing?'<rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/>':'<path d="M8 5v14l11-7z"/>'}</svg>
+        ${playing?'Hentikan':'Putar audio'}</button>
+      <span class="wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+      <span class="note">${st.mode==='sim'&&!st.done?`Sisa putar: <span class="mono">${left}</span>`:'Putar sebanyak yang dibutuhkan'}${q.talk?' · Ceramah singkat':''}</span>
+    </div>
+    <div class="stem">${q.q}</div>`;
+  }else if(q.sec==='S'){
+    body+=`<div class="stem">${q.q.replace('___','<span class="blank"></span>')}</div>`;
+  }else if(q.sec==='W'){
+    body+=`<div class="stem">${renderWE(q.s)}</div>`;
+  }else{
+    const P=PASSAGES[q.p];
+    body+=`<div class="passage" tabindex="0"><h3>${P.title}</h3>${P.paras.map((t,k)=>`<p><span class="pn">¶${k+1}</span>${t}</p>`).join('')}</div>
+      <div class="stem">${q.q}</div>`;
+  }
+  body+=`<div class="opts" role="radiogroup">${opts.map((o,k)=>{
+    let c='opt';
+    if(locked){if(k===q.a)c+=' right';else if(k===my)c+=' wrong'}
+    else if(k===my)c+=' sel';
+    return `<button class="${c}" data-k="${k}" role="radio" aria-checked="${k===my}" ${locked?'disabled':''}><span class="bub">${L4[k]}</span><span class="${q.sec==='W'?'uline':''}">${o}</span></button>`}).join('')}</div>`;
+  if(locked){body+=feedbackHTML(q,my);if(q.sec==='L')body+=transcript(q)}
+
+  app.innerHTML=`
+  <div class="bar">
+    <div class="sec"><span class="label">${st.label} · Soal ${n} dari ${tot}</span><strong>${secTitle(q.sec)}</strong></div>
+    <div class="row">
+      <span class="timer" id="timer" title="${st.limit?'Sisa waktu':'Waktu berjalan'}">00:00</span>
+      <button class="btn ${confirmEnd?'danger':''}" id="end">${st.done?'Kembali ke hasil':confirmEnd?'Yakin selesai? Klik lagi':'Selesai'}</button>
+      <button class="btn" id="home" title="Kembali ke beranda tanpa menyimpan">Keluar</button>
+    </div>
+  </div>
+  <div class="test">
+    <section class="qcard">
+      <div class="qhead"><span class="qnum">No. ${n} · ${SEC[q.sec].name} · ${PACKS[q.pack].name}</span>
+        ${st.mode==='sim'&&!st.done?`<button class="flag ${st.flags[id]?'on':''}" id="flag">${st.flags[id]?'Ditandai ragu':'Tandai ragu'}</button>`:''}</div>
+      <div class="direction">${SEC[q.sec].dir}</div>
+      ${body}
+      <div class="nav">
+        <button class="btn" id="prev" ${st.cur===0?'disabled':''}>← Sebelumnya</button>
+        ${st.cur<tot-1?`<button class="btn primary" id="next">Berikutnya →</button>`:`<button class="btn primary" id="end2">${st.done?'Kembali ke hasil':'Lihat hasil'}</button>`}
+      </div>
+    </section>
+    ${renderSheet()}
+  </div>`;
+  updTimer();bindTest();
+}
+
+function transcript(q){
+  const nm={W:q.talk?'Lecturer':'Woman',M:q.talk?'Lecturer':'Man',N:'Narrator'};
+  return `<div class="transcript"><span class="label">Transkrip audio</span>${q.audio.map(l=>`<div><b>${nm[l.who]}:</b> ${l.t}</div>`).join('')}</div>`;
+}
+
+function renderSheet(){
+  const groups=[];
+  st.ids.forEach((id,pos)=>{const s=byId(id).sec,g=s==='W'?'S':s;let G=groups.find(x=>x.g===g);if(!G){G={g,list:[]};groups.push(G)}G.list.push({id,pos})});
+  const gname={L:'Section 1 · Listening',S:'Section 2 · Structure & WE',R:'Section 3 · Reading'};
+  const answered=st.ids.filter(id=>st.ans[id]!==undefined).length;
+  return `<aside class="sheet" aria-label="Lembar jawaban">
+    <div class="sheet-head"><strong>LEMBAR JAWABAN</strong><span class="mono" style="font-size:13px">${answered}/${st.ids.length}</span></div>
+    ${groups.map(G=>`<div class="grp"><span class="label">${gname[G.g]}</span><div class="cells">${G.list.map(({id,pos})=>{
+      let c='cell';const a=st.ans[id];
+      if(isLocked(id))c+=a===byId(id).a?' ok':' no';else if(a!==undefined)c+=' ans';
+      if(pos===st.cur)c+=' cur';if(st.flags[id]&&!st.done)c+=' flg';
+      return `<button class="${c}" data-go="${pos}" aria-label="Soal ${pos+1}">${a!==undefined&&!isLocked(id)?L4[a]:pos+1}</button>`}).join('')}</div></div>`).join('')}
+    <div class="legend">${st.done||st.mode==='prac'?'<span><i></i>Kosong</span><span><i class="g"></i>Benar</span><span><i class="r"></i>Salah</span>':'<span><i></i>Kosong</span><span><i class="a"></i>Terisi</span><span><i class="f"></i>Ragu</span>'}</div>
+  </aside>`;
+}
+
+function bindTest(){
+  const id=st.ids[st.cur];
+  app.querySelectorAll('.opt').forEach(b=>b.onclick=()=>choose(+b.dataset.k));
+  app.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>go(+b.dataset.go));
+  const $=x=>document.getElementById(x);
+  $('prev').onclick=()=>go(st.cur-1);
+  if($('next'))$('next').onclick=()=>go(st.cur+1);
+  if($('end2'))$('end2').onclick=endClick;
+  $('end').onclick=endClick;
+  $('home').onclick=renderHome;
+  if($('flag'))$('flag').onclick=()=>{st.flags[id]=!st.flags[id];renderTest()};
+  if($('play'))$('play').onclick=togglePlay;
+}
+function endClick(){if(st.done){renderResult(st.result);return}if(!confirmEnd){confirmEnd=true;renderTest();setTimeout(()=>{if(confirmEnd&&st&&!st.done){confirmEnd=false;renderTest()}},4000);return}finish()}
+function choose(k){const id=st.ids[st.cur];if(isLocked(id))return;st.ans[id]=k;confirmEnd=false;renderTest()}
+function go(p){if(p<0||p>=st.ids.length)return;stopAudio();playing=false;confirmEnd=false;st.cur=p;renderTest();window.scrollTo({top:0})}
+function togglePlay(){
+  const id=st.ids[st.cur],q=byId(id);
+  if(q.sec!=='L')return;
+  if(playing){stopAudio();playing=false;renderTest();return}
+  if(st.mode==='sim'&&!st.done&&(st.plays[id]||0)>=2)return;
+  st.plays[id]=(st.plays[id]||0)+1;playing=true;renderTest();
+  speak(q.audio,()=>{if(st&&st.ids[st.cur]===id){playing=false;renderTest()}else playing=false});
+}
+
+/* ================= SKOR ================= */
+function finish(){
+  stopAudio();playing=false;clearInterval(tick);
+  if(st.done){renderResult(st.result);return}
+  st.done=true;
+  const cnt={L:[0,0],SW:[0,0],R:[0,0]};
+  st.ids.forEach(id=>{const q=byId(id),k=q.sec==='S'||q.sec==='W'?'SW':q.sec;cnt[k][1]++;if(st.ans[id]===q.a)cnt[k][0]++});
+  const range={L:[31,68],SW:[31,68],R:[31,67]}, scaled={};
+  for(const k in cnt){if(cnt[k][1]){const [lo,hi]=range[k];scaled[k]=Math.round(lo+(cnt[k][0]/cnt[k][1])*(hi-lo))}}
+  const full=['L','SW','R'].every(k=>cnt[k][1]>=10);
+  const total=full?Math.round((scaled.L+scaled.SW+scaled.R)*10/3):null;
+  const correct=st.ids.filter(id=>st.ans[id]===byId(id).a).length;
+  const used=Math.floor((Date.now()-st.start)/1000);
+  // perbarui daftar soal salah
+  let wl=sget(WKEY,[]);
+  st.ids.forEach(id=>{const ok=st.ans[id]===byId(id).a;if(ok)wl=wl.filter(x=>x!==id);else if(st.ans[id]!==undefined&&!wl.includes(id))wl.push(id)});
+  sset(WKEY,wl);
+  const h=sget(HKEY,[]);
+  h.unshift({date:new Date().toLocaleDateString('id-ID',{day:'numeric',month:'short'}),label:st.label,score:full?total:`${correct}/${st.ids.length}`});
+  sset(HKEY,h.slice(0,8));
+  st.result={cnt,scaled,total,correct,used};
+  revFilter=correct<st.ids.length?'wrong':'all';
+  renderResult(st.result);
+}
+
+function band(t){
+  if(t>=627)return'Setara level C1 (mahir).';
+  if(t>=543)return'Setara level B2. Umumnya memenuhi syarat beasiswa dan S2 dalam negeri (biasanya 500–550).';
+  if(t>=460)return'Setara level B1. Cukup untuk banyak syarat kelulusan S1 (umumnya 450–500).';
+  if(t>=337)return'Setara level A2. Fokuskan latihan pada grammar dasar dan kosakata.';
+  return'Di bawah A2. Mulailah dari Structure dan pola kalimat dasar.';
+}
+
+function renderResult(r){
+  window.scrollTo(0,0);
+  const lab={L:'Listening',SW:'Structure & WE',R:'Reading'};
+  const rows=Object.keys(r.scaled).map(k=>{const [c,t]=r.cnt[k];return `<div class="barrow"><span>${lab[k]}</span><div class="track"><div class="fill" style="width:${t?c/t*100:0}%"></div></div><span class="mono">${c}/${t} · ${r.scaled[k]}</span></div>`}).join('');
+  const wrongIds=st.ids.filter(id=>st.ans[id]!==byId(id).a);
+  // materi yang paling sering salah
+  const tc={};wrongIds.forEach(id=>{const t=byId(id).t;if(t)tc[t]=(tc[t]||0)+1});
+  const topics=Object.entries(tc).sort((a,b)=>b[1]-a[1]);
+  const list=revFilter==='wrong'?wrongIds:st.ids;
+  app.innerHTML=`
+  <div class="result">
+    <header class="masthead"><span class="formcode">HASIL · ${st.label.toUpperCase()} · WAKTU ${fmtTime(r.used)}</span><h1>Hasil ujian</h1></header>
+    <section class="score">
+      <div><span class="label">${r.total!==null?'Perkiraan skor ITP':'Jawaban benar'}</span><div class="big">${r.total!==null?r.total:r.correct+'/'+st.ids.length}</div></div>
+      <div class="bars">${rows}
+        <p class="note">${r.total!==null?band(r.total)+' ':''}Angka di kanan adalah skor skala per bagian. Ini perkiraan dari ${st.ids.length} soal, bukan skor resmi.</p></div>
+    </section>
+    <div class="row">
+      ${wrongIds.length?`<button class="btn primary" id="redo">Latihan ulang ${wrongIds.length} soal salah</button>`:''}
+      <button class="btn ${wrongIds.length?'':'primary'}" id="again">Paket baru${selPack==='x'?' (acak)':''}</button>
+      <button class="btn" id="rev">Telusuri soal satu per satu</button>
+      <button class="btn" id="home">Beranda</button>
+    </div>
+    ${topics.length?`<section class="panel"><span class="label">Materi yang perlu dipelajari</span>
+      <div class="topics">${topics.map(([t,c])=>`<details class="topic"><summary><span>${TIPS[t][0]}</span><span class="mono cnt">${c} salah</span></summary><p>${TIPS[t][1]}</p></details>`).join('')}</div></section>`:''}
+    <section class="review">
+      <div class="row" style="justify-content:space-between"><span class="label">Pembahasan</span>
+        <div class="chips sm"><button class="chip ${revFilter==='wrong'?'on':''}" data-f="wrong">Salah saja (${wrongIds.length})</button><button class="chip ${revFilter==='all'?'on':''}" data-f="all">Semua (${st.ids.length})</button></div></div>
+      ${list.length?list.map(id=>{const pos=st.ids.indexOf(id),q=byId(id),my=st.ans[id],ok=my===q.a;
+        const txt=q.sec==='W'?q.s.replace(/[{}]/g,''):q.q;
+        return `<details ${!ok&&revFilter==='wrong'?'open':''}><summary><span class="mk ${my===undefined?'na':ok?'ok':'no'}">${pos+1}</span><span class="sum">${txt}</span><span class="tag hidden-sm">${SEC[q.sec].name.split(' ')[0]}</span></summary>
+          <div class="body">
+            ${q.sec==='W'?`<div class="stem sm">${renderWE(q.s)}</div>`:''}
+            ${q.sec==='R'?`<div class="note">Bacaan: ${PASSAGES[q.p].title}</div>`:''}
+            <div class="tag">Jawabanmu: <span class="${ok?'ok-t':'no-t'}">${my===undefined?'—':L4[my]+'. '+optsOf(q)[my]}</span> · Kunci: <span class="ok-t">${L4[q.a]}. ${optsOf(q)[q.a]}</span></div>
+            ${feedbackHTML(q,my)}
+            ${q.sec==='L'?transcript(q):''}
+          </div></details>`}).join(''):'<p class="note">Semua jawaban benar. Tidak ada yang perlu diulang.</p>'}
+    </section>
+  </div>`;
+  const $=x=>document.getElementById(x);
+  const mode=st.mode;
+  if($('redo'))$('redo').onclick=()=>startTest('prac',wrongIds,'Ulang soal salah');
+  $('again').onclick=()=>{const secs=[...new Set(st.ids.map(id=>byId(id).sec))];startTest(mode,packSet(selPack,secs),packLabel(selPack)+(mode==='sim'?' · Simulasi':' · Latihan'))};
+  $('home').onclick=renderHome;
+  $('rev').onclick=()=>{st.cur=0;renderTest()};
+  app.querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{revFilter=b.dataset.f;renderResult(r)});
+}
+
+/* ================= KEYBOARD ================= */
+document.addEventListener('keydown',e=>{
+  if(!st||e.ctrlKey||e.metaKey||e.altKey)return;
+  if(!document.querySelector('.qcard'))return;
+  const k=e.key.toLowerCase();
+  if(k.length===1&&'abcd'.includes(k)){choose('abcd'.indexOf(k));return}
+  if(e.key==='ArrowRight'){go(st.cur+1);return}
+  if(e.key==='ArrowLeft'){go(st.cur-1);return}
+  if(e.key===' '&&byId(st.ids[st.cur]).sec==='L'&&!e.target.closest('button,summary')){e.preventDefault();togglePlay()}
+});
+
+/* tombol Back di Android */
+window.__back=function(){if(st){renderHome();window.scrollTo(0,0);return true}return false};
+
+renderHome();
+</script>
+
+<script>if("serviceWorker" in navigator&&location.protocol==="https:"){navigator.serviceWorker.register("sw.js").catch(function(){})}</script>
+</body></html>

@@ -1,0 +1,11 @@
+SIMULASI TOEFL ITP - VERSI WEB-APP (iPhone & Android)
+
+1. Upload folder "SimulasiTOEFL" ini ke hosting gratis yang memakai https,
+   misalnya Netlify (netlify.com, fitur "Netlify Drop": seret folder ke halaman)
+   atau GitHub Pages.
+2. Buka alamat situs yang didapat:
+   - iPhone: buka di Safari > tombol Share > "Add to Home Screen".
+   - Android: buka di Chrome > menu titik tiga > "Install app" / "Add to Home screen".
+3. Buka sekali saat online. Setelah itu aplikasi bisa dipakai offline.
+
+Catatan: suara Listening memakai suara bahasa Inggris bawaan HP.
